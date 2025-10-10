@@ -46,7 +46,7 @@ export default function Signup() {
 
       <div className="w-full max-w-md  bg-[#292929] rounded-xl shadow-md py-2 px-8 ">
 
-     	<h1 className="text-blue-500 text-[28px] text-center mt-3 py-6" >{loading ? "Processing" : "Signup"}</h1>
+     	<h1 className="text-blue-800 text-[28px] text-center mt-3 py-6" >{loading ? "Processing" : "Signup"}</h1>
 
       <div  className="grid gap-10 self-center">
         <input value={user.username} onChange={(e) => setUser({...user, username: e.target.value})} placeholder="Name"  required className="w-full bg-gray-700 text-white border-0 rounded-md p-2 focus:bg-gray-600 focus:outline-none 

@@ -45,7 +45,7 @@ export default function Login() {
 
       <div className="w-full max-w-md  bg-[#292929] rounded-xl shadow-md py-2 px-8 ">
 
-     	<h1 className="text-blue-500 text-[28px] text-center mt-3 py-6" >{loading ? "Processing" : "Login"}</h1>
+     	<h1 className="text-green-500 text-[28px] text-center mt-3 py-6" >{loading ? "Processing" : "Login"}</h1>
 
       <div  className="grid gap-10 self-center">
 
