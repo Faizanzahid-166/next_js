@@ -55,8 +55,8 @@ export async function GET(request: Request) {
 
         return Response.json({
             success: true,
-            message: 'Username is already taken'
-        },{status:400})
+            message: 'Username is unique'
+        },{status:200})
 
     } catch (error) {
      console.error('error checking username ',error);
