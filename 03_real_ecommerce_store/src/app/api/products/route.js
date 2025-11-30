@@ -1,48 +1,132 @@
-// GET: list products (supports ?q=&category=&page=&limit=)
-// GET list, POST create (admin)
-import { dbConnect } from "@/lib/dbConnection";
-import Product from "@/models/Product.model";
-import { getUserFromAuthHeader } from "@/lib/getUserFromRequest";
+// // GET: list products (supports ?q=&category=&page=&limit=)
+// // GET list, POST create (admin)
+// import  dbConnect  from "@/lib/dbConnection";
+// import Product from "@/models/Product.model";
+// import { getUserFromAuthHeader } from "@/lib/getUserFromRequest";
+// import { successResponse, errorResponse } from "@/lib/response";
+
+// export async function GET(req) {
+//   await dbConnect();
+//   try {
+//     const url = new URL(req.url);
+//     const q = url.searchParams.get("q") || "";
+//     const category = url.searchParams.get("category") || "";
+//     const page = Number(url.searchParams.get("page") || 1);
+//     const limit = Number(url.searchParams.get("limit") || 12);
+//     const skip = (page - 1) * limit;
+
+//     const filter = {};
+//     if (q) filter.$or = [
+//       { title: { $regex: q, $options: "i" } },
+//       { description: { $regex: q, $options: "i" } }
+//     ];
+//     if (category) filter.category = category;
+
+//     const [items, total] = await Promise.all([
+//       Product.find(filter).skip(skip).limit(limit).sort({ createdAt: -1 }),
+//       Product.countDocuments(filter)
+//     ]);
+
+//     return successResponse("Products list", { items, total, page, limit });
+//   } catch (err) {
+//     return errorResponse(err.message || "Failed to list products", 500);
+//   }
+// }
+
+// export async function POST(req) {
+//   await dbconnect();
+//   try {
+//     const user = await getUserFromAuthHeader(req);
+//     if (!user || user.role !== "admin") return errorResponse("Forbidden", 403);
+
+//     const body = await req.json();
+//     // validate fields...
+//     const product = await Product.create(body);
+//     return successResponse("Product created", product, 201);
+//   } catch (err) {
+//     return errorResponse(err.message || "Failed to create product", 500);
+//   }
+// }
+
+
+import { supabase  } from "@/lib/supabase";
+import { getUserFromRequest } from "@/lib/getUserFromRequest";
 import { successResponse, errorResponse } from "@/lib/response";
 
+// -------------------------------------------
+// GET Products (Search, Pagination, Category)
+// -------------------------------------------
 export async function GET(req) {
-  await dbConnect();
   try {
     const url = new URL(req.url);
+
     const q = url.searchParams.get("q") || "";
     const category = url.searchParams.get("category") || "";
     const page = Number(url.searchParams.get("page") || 1);
     const limit = Number(url.searchParams.get("limit") || 12);
-    const skip = (page - 1) * limit;
+    const from = (page - 1) * limit;
+    const to = from + limit - 1;
 
-    const filter = {};
-    if (q) filter.$or = [
-      { title: { $regex: q, $options: "i" } },
-      { description: { $regex: q, $options: "i" } }
-    ];
-    if (category) filter.category = category;
+    let query = supabase
+      .from("01_electroic_gadgets")
+      .select("*", { count: "exact" })
+      .order("created_at", { ascending: false });
 
-    const [items, total] = await Promise.all([
-      Product.find(filter).skip(skip).limit(limit).sort({ createdAt: -1 }),
-      Product.countDocuments(filter)
-    ]);
+    // Search
+    if (q) {
+      query = query.or(
+        `title.ilike.%${q}%,description.ilike.%${q}%`
+      );
+    }
 
-    return successResponse("Products list", { items, total, page, limit });
+    // Category filter
+    if (category) {
+      query = query.eq("category", category);
+    }
+
+    // Pagination
+    query = query.range(from, to);
+
+    const { data, count, error } = await query;
+    if (error) return errorResponse(error.message, 500);
+
+    return successResponse("Products list", {
+      items: data,
+      total: count,
+      page,
+      limit,
+    });
   } catch (err) {
     return errorResponse(err.message || "Failed to list products", 500);
   }
 }
 
+// -------------------------------------------
+// POST Products (Admin only)
+// -------------------------------------------
 export async function POST(req) {
-  await dbconnect();
   try {
-    const user = await getUserFromAuthHeader(req);
-    if (!user || user.role !== "admin") return errorResponse("Forbidden", 403);
+    const user = await getUserFromRequest(req);
+    if (!user || user.role !== "admin") {
+      return errorResponse("Forbidden", 403);
+    }
 
     const body = await req.json();
-    // validate fields...
-    const product = await Product.create(body);
-    return successResponse("Product created", product, 201);
+
+    // Optional: Validate (title, price etc.)
+    if (!body.title || !body.price) {
+      return errorResponse("Title & price required", 400);
+    }
+
+    const { data, error } = await supabase
+      .from("products")
+      .insert(body)
+      .select()
+      .single();
+
+    if (error) return errorResponse(error.message, 500);
+
+    return successResponse("Product created", data, 201);
   } catch (err) {
     return errorResponse(err.message || "Failed to create product", 500);
   }

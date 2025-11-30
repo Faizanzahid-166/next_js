@@ -1,95 +1,73 @@
-// import { dbConnect } from "@/lib/db";
-// import User from "@/models/User.model";
-// import { hashPassword, signToken, generateOTP } from "@/lib/auth";
-// import { successResponse, errorResponse } from "@/lib/response";
-
-// export async function POST(req) {
-//   await dbConnect();
-//   try {
-//     const body = await req.json();
-//     const { name, email, password } = body;
-//     if (!name || !email || !password) return errorResponse("Missing fields", 400);
-
-//     const existing = await User.findOne({ email });
-//     if (existing) return errorResponse("Email already exists", 409);
-
-//     const hashed = await hashPassword(password);
-//     const otpObj = generateOTP();
-
-//     const user = await User.create({
-//       name,
-//       email,
-//       password: hashed,
-//       otp: { code: otpObj.code, expiresAt: otpObj.expiresAt },
-//       emailVerified: false
-//     });
-
-//     // TODO: send OTP by email/SMS (use nodemailer or external service)
-//     // sendOtpEmail(email, otpObj.code);
-
-//     const token = signToken({ id: user._id });
-//     const userSafe = { id: user._id, name: user.name, email: user.email, role: user.role };
-
-//     return successResponse("User created. Verify OTP sent to email.", { user: userSafe, token }, 201);
-//   } catch (err) {
-//     return errorResponse(err.message || "Signup failed", 500);
-//   }
-// }
-
-import { dbConnect } from "@/lib/dbConnection";
+// src/app/api/auth/signup.js
+import dbConnect from "@/lib/dbConnection";
 import User from "@/models/User.model";
-import { hashPassword, signToken, generateOTP, getAuthCookieHeader } from "@/lib/auth";
-import { sendOtpEmail } from "@/lib/mailer";
-import { validateBody } from "@/lib/validate";
+import { hashPassword, generateOTP } from "@/lib/auth";
+import { sendOtpEmail } from "@/lib/nodemailer";
 import { z } from "zod";
+import bcrypt from "bcryptjs";
 import { successResponse, errorResponse } from "@/lib/response";
 
-
+// Validation schema
 const SignupSchema = z.object({
-name: z.string().min(2),
-email: z.string().email(),
-password: z.string().min(6),
+  name: z.string().min(2, "Name too short"),
+  email: z.string().email("Invalid email"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
 });
-
 
 export async function POST(req) {
-await dbConnect();
-const { ok, data, error } = await validateBody(SignupSchema, req);
-if (!ok) return errorResponse({ validation: error }, 400);
+  try {
+    await dbConnect();
 
+    const body = await req.json();
+    const parsed = SignupSchema.safeParse(body);
 
-const { name, email, password } = data;
-try {
-const existing = await User.findOne({ email });
-if (existing) return errorResponse("Email already registered", 409);
+    if (!parsed.success) {
+      return errorResponse(parsed.error.errors[0].message, 400);
+    }
 
+    const { name, email, password } = parsed.data;
 
-const hashed = await hashPassword(password);
-const otpObj = generateOTP();
+    // Check if email already exists
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return errorResponse("Email already registered", 409);
+    }
 
+    // Hash password
+    const hashedPassword = await hashPassword(password);
 
-const user = await User.create({
-name,
-email,
-password: hashed,
-otp: { code: otpObj.code, expiresAt: otpObj.expiresAt },
-emailVerified: false,
-});
+    // Generate OTP
+    const otpObj = generateOTP(); // { code, expiresAt }
+    const otpHashed = await bcrypt.hash(otpObj.code, 10);
 
+    // Create user
+    const user = await User.create({
+      name,
+      email,
+      password: hashedPassword,
+      otp: {
+        code: otpHashed,
+        expiresAt: otpObj.expiresAt,
+      },
+      emailVerified: false,
+    });
 
-// send OTP
-await sendOtpEmail(email, otpObj.code).catch(err => console.log("otp email error", err));
+    // Send OTP email
+    try {
+      await sendOtpEmail(email, otpObj.code);
+    } catch (err) {
+      console.error("Failed to send OTP email:", err);
+      return errorResponse("Failed to send OTP email", 500);
+    }
 
+    return successResponse(
+      "Signup successful. OTP sent to email.",
+      { id: user._id, name: user.name, email: user.email },
+      201
+    );
 
-const token = signToken({ id: user._id });
-const setCookie = getAuthCookieHeader(token);
-
-
-const userSafe = { id: user._id, name: user.name, email: user.email, role: user.role };
-
-
-return successResponse("User created. OTP sent.", { user: userSafe }, 201, { "Set-Cookie": setCookie });
-} catch (err) {
-return errorResponse(err.message || "Signup error", 500);
-}
+  } catch (err) {
+    console.error("Signup error:", err);
+    return errorResponse(err.message || "Signup error", 500);
+  }
 }

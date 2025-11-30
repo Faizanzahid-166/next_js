@@ -1,8 +1,10 @@
+// src/app/api/auth/logout/route.js
 import { clearAuthCookieHeader } from "@/lib/auth";
-import { successResponse } from "@/lib/response";
-
 
 export async function POST() {
-const header = clearAuthCookieHeader();
-return successResponse("Logged out", null, 200, { "Set-Cookie": header });
+  const header = clearAuthCookieHeader();
+  return new Response(null, {
+    status: 200,
+    headers: { "Set-Cookie": header },
+  });
 }

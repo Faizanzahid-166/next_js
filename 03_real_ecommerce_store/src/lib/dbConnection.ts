@@ -22,9 +22,10 @@ const connection: ConnectionObject = {}
         } catch (error) {
             
             console.log('DB CONNECTION FAILED');
-            process.exit(1)
+             throw error; // <-- don’t exit, let the route handle it
+           // process.exit(1)
             
         }
     }
 
-    export default dbConnect
+     export default dbConnect
