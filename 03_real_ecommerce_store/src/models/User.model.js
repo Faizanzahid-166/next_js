@@ -5,6 +5,7 @@ const UserSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true, lowercase: true, trim: true },
   password: { type: String, required: true, select: false },
   role: { type: String, enum: ["customer", "admin"], default: "customer" },
+  isRoot: { type: Boolean, default: false }, // <-- new field
   avatar: { type: String, default: "" },
   emailVerified: { type: Boolean, default: false },
   otp: {

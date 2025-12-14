@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { createRootAdmin } from "@/lib/createRootAdmin";
 
 type ConnectionObject = {
     isConnected?: number
@@ -18,6 +19,10 @@ const connection: ConnectionObject = {}
             const db = await mongoose.connect(process.env.MONGO_URI || '',{})
             connection.isConnected = db.connections[0].readyState
             console.log("DB CONNECTED SUCCESSFULLY");
+
+            
+            // Call root admin creator
+            await createRootAdmin();
             
         } catch (error) {
             

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect } from "react";
-import { logoutUser, fetchUser } from "@/redux/authSlice";
+import { logoutUser, fetchUser } from "@/redux/authSliceTunk/authSlice";
 import MobileMenu from "./MobileMenu";
 
 export default function Navbar() {
@@ -47,6 +47,7 @@ export default function Navbar() {
         {user ? (
           <>
             <li className="font-semibold text-yellow-300">{user.name}</li>
+            <li className="font-semibold text-green-300">{user.role}</li>
 
             <li>
               <button

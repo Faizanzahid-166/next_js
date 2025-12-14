@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/form";
 
 import { useDispatch, useSelector } from "react-redux";
-import { loginUser } from "@/redux/authSlice";
+import { loginUser } from "@/redux/authSliceTunk/authSlice";
 import { toast } from "sonner";
 
 const LoginSchema = z.object({
@@ -51,6 +51,7 @@ export default function LoginPage() {
   }
 
   return (
+    <div className="min-h-screen">
     <div className="max-w-md mx-auto pt-10">
       <Card>
         <CardHeader>
@@ -105,6 +106,7 @@ export default function LoginPage() {
           </Form>
         </CardContent>
       </Card>
+    </div>
     </div>
   );
 }

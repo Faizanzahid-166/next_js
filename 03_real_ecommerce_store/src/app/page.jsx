@@ -1,10 +1,19 @@
 "use client";
 
 import Link from "next/link";
-import { useSelector } from "react-redux";
+import { useEffect } from "react";
+import { useSelector, useDispatch } from "react-redux";
+import { fetchUser } from "@/redux/authSliceTunk/authSlice";
 
 export default function HomePage() {
+  const dispatch = useDispatch();
   const { user, loading } = useSelector((state) => state.auth);
+
+  useEffect(() => {
+    if (!user) {
+      dispatch(fetchUser());
+    }
+  }, [dispatch, user]);
 
   if (loading) {
     return (
@@ -19,7 +28,6 @@ export default function HomePage() {
 
       <div className="max-w-3xl w-full text-center p-10 bg-white/70 backdrop-blur-md rounded-3xl shadow-xl animate-fadeIn">
 
-        {/* IF USER LOGGED IN */}
         {user ? (
           <>
             <h1 className="text-5xl font-extrabold text-purple-700 mb-3">
@@ -39,7 +47,7 @@ export default function HomePage() {
               </Link>
 
               <Link
-                href="/profile"
+                href="/customer/dashboard"
                 className="px-6 py-3 bg-gray-800 text-white font-semibold rounded-xl shadow-lg hover:bg-gray-900 hover:scale-105 transition"
               >
                 My Profile
@@ -48,7 +56,6 @@ export default function HomePage() {
           </>
         ) : (
           <>
-            {/* IF USER NOT LOGGED IN */}
             <h1 className="text-5xl font-extrabold text-blue-700 mb-3">
               Welcome to Blitz E-Commerce ⚡
             </h1>
@@ -76,7 +83,6 @@ export default function HomePage() {
         )}
       </div>
 
-      {/* smooth fade in animation */}
       <style jsx>{`
         .animate-fadeIn {
           animation: fadeIn 0.7s ease-out;

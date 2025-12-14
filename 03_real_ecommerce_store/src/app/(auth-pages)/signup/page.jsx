@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
 
-import { signupUser } from "@/redux/authSlice";
+import { signupUser } from "@/redux/authSliceTunk/authSlice";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -51,6 +51,7 @@ export default function SignupPage() {
   }
 
   return (
+    <div className="min-h-screen">
     <div className="max-w-md mx-auto pt-10">
       <Card>
         <CardHeader>
@@ -118,6 +119,7 @@ export default function SignupPage() {
           </Form>
         </CardContent>
       </Card>
+    </div>
     </div>
   );
 }

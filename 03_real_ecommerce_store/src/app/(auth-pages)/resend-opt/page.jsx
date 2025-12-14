@@ -17,7 +17,7 @@ export default function ResendOtpPage() {
     resolver: zodResolver(ResendSchema),
     defaultValues: { email: "" },
   });
-
+  
   async function onSubmit(values) {
     const res = await fetch("/api/auth/resend-otp", {
       method: "POST",
@@ -28,8 +28,9 @@ export default function ResendOtpPage() {
     const data = await res.json();
     alert(data.message);
   }
-
+  
   return (
+    <div className="min-h-screen"> 
     <div className="max-w-md mx-auto pt-10">
       <Card>
         <CardHeader>
@@ -59,6 +60,7 @@ export default function ResendOtpPage() {
           </Form>
         </CardContent>
       </Card>
+    </div>
     </div>
   );
 }

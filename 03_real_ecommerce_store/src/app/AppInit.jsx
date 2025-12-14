@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { useDispatch } from "react-redux";
-import { fetchUser } from "@/redux/authSlice";
+import { fetchUser } from "@/redux/authSliceTunk/authSlice";
 
 export default function AppInit({ children }) {
   const dispatch = useDispatch();

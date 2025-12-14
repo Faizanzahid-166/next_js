@@ -38,7 +38,7 @@ export default function RootLayout({
         <Navbar />
 
         {/* Main content (replacement for Outlet) */}
-        <main className="pt-20"> 
+        <main className="mx-auto px-auto"> 
           {children}
         </main>
 
