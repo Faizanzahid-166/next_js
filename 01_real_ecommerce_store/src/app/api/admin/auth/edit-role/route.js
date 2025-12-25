@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 import { getUserFromCookies } from "@/lib/getUserFromRequest";
 import { successResponse, errorResponse } from "@/lib/response";
 import connectDB from "@/lib/dbConnection";
