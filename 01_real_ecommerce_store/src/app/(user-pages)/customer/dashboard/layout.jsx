@@ -36,6 +36,14 @@ export default function DashboardLayout({ children }) {
     );
   }
 
+    const navLinks = [
+    { name: "Transaction History", path: "/" },
+    { name: "My Orders", path: "/" },
+    { name: "Add Payment method", path: "/" },
+    { name: "Career", path: "/" },
+    { name: "My Returns", path: "/" },
+  ];
+
   return (
     <div className="min-h-screen flex bg-gray-100">
 
@@ -43,27 +51,19 @@ export default function DashboardLayout({ children }) {
       <aside className="w-64 bg-white shadow-lg p-6 space-y-4">
         <h2 className="text-xl font-bold mb-6">Dashboard</h2>
 
-        <nav className="space-y-2">
-          <Link className="block px-3 py-2 rounded-lg hover:bg-gray-100" href="/dashboard">
-            Profile Overview
-          </Link>
-
-          <Link className="block px-3 py-2 rounded-lg hover:bg-gray-100" href="/dashboard/orders">
-            My Orders
-          </Link>
-
-          <Link className="block px-3 py-2 rounded-lg hover:bg-gray-100" href="/dashboard/settings">
-            Settings
-          </Link>
-
-          {user.role === "customer" && (
-            <Link
-              className="block px-3 py-2 rounded-lg hover:bg-gray-100 text-green-600"
-              href="/customer/dashboard/admin-request"
-            >
-              Request Admin Access
-            </Link>
-          )}
+        <nav className="space-y-2 mt-6">
+                    <ul>
+                      {navLinks.map((link) => (
+                        <li key={link.name}>
+                          <Link
+                            href={link.path}
+                            className="block px-3 py-2 rounded-lg hover:bg-gray-100 "
+                          >
+                            {link.name}
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
         </nav>
 
         <button

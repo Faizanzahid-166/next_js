@@ -1,41 +1,36 @@
+// lib/getUserFromRequest.js
 import User from "@/models/User.model";
-import connectDB from "@/lib/dbConnection";
 import { verifyToken } from "@/lib/auth";
-import { cookies } from "next/headers";
 
-export async function getUserFromCookies() {
+export async function getUserFromCookies(req) {
   try {
-    console.log("📌 getUserFromCookies() called");
-
-    // Must await cookies()
-    const cookieStore = await cookies();
-
-    console.log("🍪 ALL COOKIES:", cookieStore.getAll());
-
-    const tokenCookie = cookieStore.get("token");
-    console.log("🍪 TOKEN COOKIE:", tokenCookie);
-
-    const token = tokenCookie?.value;
-    console.log("🔑 TOKEN VALUE:", token);
-
-    if (!token) {
-      console.log("❌ No token found");
+    if (!req || !req.headers) {
+      //console.log("❌ [Auth] Request object is missing or invalid:", req);
       return null;
     }
 
-    await connectDB();
-    console.log("🔗 DB connected");
+    const cookie = req.headers.get("cookie") || "";
+    const token = cookie
+      .split("; ")
+      .find(c => c.startsWith("token="))
+      ?.split("=")[1];
 
-    const payload = verifyToken(token);
-    console.log("🧩 PAYLOAD:", payload);
+    //console.log("🔑 [Auth] Cookie header:", cookie);
+    //console.log("🔑 [Auth] Token:", token);
 
-    const user = await User.findById(payload.id).select("-password");
-    console.log("👤 USER:", user);
+    if (!token) return null;
 
+    const payload = await verifyToken(token);
+    //console.log("🧩 [Auth] Token payload:", payload);
+
+    if (!payload?.id) return null;
+
+    // ✅ Ensure id is a string for MongoDB
+    const user = await User.findById(payload.id);
     return user || null;
 
   } catch (err) {
-    console.error("🔥 ERROR in getUserFromCookies:", err);
+    console.log("🔥 [Auth] getUserFromCookies error:", err);
     return null;
   }
 }

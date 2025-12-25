@@ -12,11 +12,12 @@ export async function GET(req) {
     const params = Object.fromEntries(url.searchParams.entries());
 
     let query = supabaseServer
-      .from("01_electroic_gadgets")
+      .from("ecommerce_store_products")
       .select("*", { count: "exact" });
 
     // 🔍 Search
     query = applySearch(query, params);
+
 
     // 🎯 Category filter
     query = applyFilters(query, params);

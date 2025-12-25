@@ -47,7 +47,7 @@ export default function HomePage() {
               </Link>
 
               <Link
-                href="/customer/dashboard"
+               href={user?.role === "customer" ? "/customer/dashboard" : "/admin/dashboard"}
                 className="px-6 py-3 bg-gray-800 text-white font-semibold rounded-xl shadow-lg hover:bg-gray-900 hover:scale-105 transition"
               >
                 My Profile

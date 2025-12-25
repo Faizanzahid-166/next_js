@@ -1,25 +1,39 @@
+// /api/products/[id]/route.js
 import { supabaseServer } from "@/lib/supabase";
 import { successResponse, errorResponse } from "@/lib/response";
 
-export async function GET(req, context) {
-  const params = await context.params;
-  const id = Number(params.id);
+export async function GET(req, { params }) {
+  try {
+    console.log("➡️ GET PRODUCT REQUEST");
 
-  console.log(params,id)
+    // ✅ FIX: params is a Promise in Next 15
+    const resolvedParams = await params;
+    console.log("📦 Resolved params:", resolvedParams);
 
-  if (!id) {
-    return errorResponse("Invalid product id", 400);
+    const { id } = resolvedParams;
+    console.log("🆔 Raw param id:", id, "type:", typeof id);
+
+    if (!id || typeof id !== "string") {
+      console.error("❌ Invalid product id");
+      return errorResponse("Invalid product id", 400);
+    }
+
+    const { data, error } = await supabaseServer
+      .from("ecommerce_store_products")
+      .select("*")
+      .eq("id", id)
+      .single();
+
+    console.log("📦 Product data:", data);
+    console.log("⚠️ Supabase error:", error);
+
+    if (error || !data) {
+      return errorResponse("Product not found", 404);
+    }
+
+    return successResponse("Product details", data);
+  } catch (err) {
+    console.error("🔥 GET PRODUCT ERROR:", err);
+    return errorResponse("Failed to fetch product", 500);
   }
-
-  const { data, error } = await supabaseServer
-    .from("01_electroic_gadgets")
-    .select("*")
-    .eq("id", id)
-    .single();
-
-  if (error || !data) {
-    return errorResponse("Product not found", 404);
-  }
-
-  return successResponse("Product details", data);
 }

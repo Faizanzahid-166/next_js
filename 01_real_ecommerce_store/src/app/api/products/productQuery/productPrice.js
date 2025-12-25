@@ -1,12 +1,20 @@
-export function applyPriceFilter(query, priceInput) {
-  if (!priceInput) return query;
+export function applyPriceFilter(query, price) {
+  if (!price) return query;
 
-  const price = parseFloat(priceInput);
-  if (isNaN(price)) return query;
+  const value = Number(price);
+  if (isNaN(value)) return query;
 
-  // Optional: small range for flexibility (±1)
-  const minPrice = price - 1;
-  const maxPrice = price + 1;
+  const step = 50;
 
-  return query.gte("price", minPrice).lte("price", maxPrice);
+  let min = 0;
+  let max = step;
+
+  if (value > step) {
+    min = Math.floor((value - 1) / step) * step + 1;
+    max = Math.ceil(value / step) * step;
+  }
+
+  query = query.gte("price", min).lte("price", max);
+
+  return query;
 }

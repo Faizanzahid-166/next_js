@@ -1,8 +1,14 @@
 import { NextResponse } from "next/server";
 
 export function middleware(req) {
-  console.log("🟢 MIDDLEWARE HIT:", req.nextUrl.pathname);
+  console.log("🟢 MIDDLEWARE INIT HIT");
+  //console.log("📌 Pathname:", req.nextUrl.pathname);
 
+  // ✅ Log cookies correctly
+  const cookies = req.cookies.getAll(); // returns array of { name, value }
+  //console.log("📌 Cookies:", cookies);
+
+  // Get token
   const token = req.cookies.get("token")?.value;
   const pathname = req.nextUrl.pathname;
 

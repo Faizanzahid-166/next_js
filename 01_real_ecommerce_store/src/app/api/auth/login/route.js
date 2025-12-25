@@ -13,31 +13,22 @@ const LoginSchema = z.object({
 export async function POST(req) {
   await dbConnect();
 
-  // validate request body
   const { ok, data, error } = await validateBody(LoginSchema, req);
   if (!ok) return errorResponse(error, 400);
 
   const { email, password } = data;
 
   try {
-    // check user exists
     const user = await User.findOne({ email }).select("+password");
     if (!user) return errorResponse("Invalid email or password", 401);
 
-    // optionally block unverified email
-    // if (!user.emailVerified) return errorResponse("Please verify your email", 403);
-
-    // compare password
     const match = await comparePassword(password, user.password);
     if (!match) return errorResponse("Invalid email or password", 401);
 
-    // generate token
-    const token = signToken({ id: user._id });
+    const token = await signToken({ id: user._id }); // ✅ await token
 
-    // create cookie header
     const cookieHeader = getAuthCookieHeader(token);
 
-    // safe user object
     const userSafe = {
       id: user._id,
       name: user.name,
@@ -45,18 +36,11 @@ export async function POST(req) {
       role: user.role,
     };
 
-    return new Response(
-      JSON.stringify({
-        message: "Logged in",
-        user: userSafe,
-      }),
-      {
-        status: 200,
-        headers: {
-          "Content-Type": "application/json",
-          "Set-Cookie": cookieHeader,
-        },
-      }
+    return successResponse(
+      "Logged in successfully",
+      userSafe,
+      200, // status
+      { "Set-Cookie": cookieHeader } // headers
     );
 
   } catch (err) {

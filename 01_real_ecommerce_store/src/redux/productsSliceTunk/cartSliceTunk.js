@@ -1,129 +1,133 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 
-// =======================
-// 🔵 ASYNC THUNKS
-// =======================
+// Base URL for API
+const API_BASE = "/api/products/cart";
 
-// Add / Update cart item
-export const addToCart = createAsyncThunk(
-  "cart/addToCart",
-  async ({ productId, quantity, userId }, { rejectWithValue }) => {
-    try {
-      const res = await axios.post("/api/products/cart/addcart", { productId, quantity, userId });
-      console.log("Add to cart response:", res.data);
+// ======================
+// Async thunks
+// ======================
 
-      return {
-        productId: res.data.data.productId,
-        quantity: res.data.data.quantity,
-        userId: res.data.data.userId,
-      };
-    } catch (err) {
-      return rejectWithValue(err.response?.data?.message || "Failed to add to cart");
-    }
-  }
-);
-
-// Fetch cart items for a user
+// Fetch cart
 export const fetchCart = createAsyncThunk(
   "cart/fetchCart",
-  async (userId, { rejectWithValue }) => {
+  async (_, { rejectWithValue }) => {
     try {
-      const res = await axios.get("/api/products/cart/fetchcart", { params: { userId } });
-      console.log("Fetch cart response:", res.data);
-      return res.data.data || [];
+      const res = await axios.get(`${API_BASE}/fetchcart`, {
+        withCredentials: true, // send cookies for auth
+      });
+      console.log("fetchCart API response:", res.data); // ✅ log API response
+      return res.data.data; // cart data
     } catch (err) {
-      return rejectWithValue(err.response?.data?.message || "Failed to fetch cart");
+      console.log("fetchCart error:", err.response?.data || err.message); // ✅ log error
+      return rejectWithValue(err.response?.data || err.message);
     }
   }
 );
 
-// Clear entire cart
-export const clearCartAPI = createAsyncThunk(
-  "cart/clearCart",
-  async (userId, { rejectWithValue }) => {
+// Add or update cart item
+export const addCartItem = createAsyncThunk(
+  "cart/addCartItem",
+  async ({ productId, quantity }, { rejectWithValue }) => {
     try {
-      const res = await axios.post("/api/products/cart/deletecart", { userId });
+      const res = await axios.post(
+        `${API_BASE}/addcart`,
+        { productId, quantity },
+        { withCredentials: true }
+      );
+      console.log("addCartItem API response:", res.data); // ✅ log API response
+      return res.data.data; // updated cart
+    } catch (err) {
+      console.log("addCartItem error:", err.response?.data || err.message); // ✅ log error
+      return rejectWithValue(err.response?.data || err.message);
+    }
+  }
+);
+
+// Delete entire cart
+export const clearCart = createAsyncThunk(
+  "cart/clearCart",
+  async (_, { rejectWithValue }) => {
+    try {
+      const res = await axios.delete(`${API_BASE}/deletecart`, {
+        withCredentials: true,
+      });
+      console.log("clearCart API response:", res.data); // ✅ log API response
       return res.data;
     } catch (err) {
-      return rejectWithValue(err.response?.data?.message || "Failed to clear cart");
+      console.log("clearCart error:", err.response?.data || err.message); // ✅ log error
+      return rejectWithValue(err.response?.data || err.message);
     }
   }
 );
 
-// =======================
-// 🔵 SLICE
-// =======================
-
+// ======================
+// Slice
+// ======================
 const cartSlice = createSlice({
   name: "cart",
   initialState: {
+    cartId: null,
     items: [],
     loading: false,
     error: null,
   },
-  reducers: {
-    // Local clear without API
-    clearCartLocal: (state) => {
-      state.items = [];
-      state.loading = false;
-      state.error = null;
-    },
-  },
+  reducers: {},
   extraReducers: (builder) => {
-    builder
-      // Add to Cart
-      .addCase(addToCart.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(addToCart.fulfilled, (state, action) => {
-        state.loading = false;
+    // Fetch Cart
+    builder.addCase(fetchCart.pending, (state) => {
+      console.log("fetchCart pending"); // ✅ log
+      state.loading = true;
+      state.error = null;
+    });
+    builder.addCase(fetchCart.fulfilled, (state, action) => {
+      console.log("fetchCart fulfilled:", action.payload); // ✅ log payload
+      state.loading = false;
+      state.cartId = action.payload.cartId || null;
+      state.items = action.payload.items || [];
+    });
+    builder.addCase(fetchCart.rejected, (state, action) => {
+      console.log("fetchCart rejected:", action.payload); // ✅ log error
+      state.loading = false;
+      state.error = action.payload;
+    });
 
-        const index = state.items.findIndex(
-          (item) => String(item.productId) === String(action.payload.productId)
-        );
+    // Add/Update Cart Item
+    builder.addCase(addCartItem.pending, (state) => {
+      console.log("addCartItem pending"); // ✅ log
+      state.loading = true;
+      state.error = null;
+    });
+    builder.addCase(addCartItem.fulfilled, (state, action) => {
+      console.log("addCartItem fulfilled:", action.payload); // ✅ log payload
+      state.loading = false;
+      state.cartId = action.payload.cartId;
+      state.items = action.payload.items;
+    });
+    builder.addCase(addCartItem.rejected, (state, action) => {
+      console.log("addCartItem rejected:", action.payload); // ✅ log error
+      state.loading = false;
+      state.error = action.payload;
+    });
 
-        if (index >= 0) {
-          state.items[index].quantity = action.payload.quantity;
-        } else {
-          state.items.push(action.payload);
-        }
-      })
-      .addCase(addToCart.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
-      })
-
-      // Fetch Cart
-      .addCase(fetchCart.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(fetchCart.fulfilled, (state, action) => {
-        state.loading = false;
-        state.items = action.payload;
-      })
-      .addCase(fetchCart.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
-      })
-
-      // Clear Cart via API
-      .addCase(clearCartAPI.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(clearCartAPI.fulfilled, (state) => {
-        state.loading = false;
-        state.items = [];
-      })
-      .addCase(clearCartAPI.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
-      });
+    // Clear Cart
+    builder.addCase(clearCart.pending, (state) => {
+      console.log("clearCart pending"); // ✅ log
+      state.loading = true;
+      state.error = null;
+    });
+    builder.addCase(clearCart.fulfilled, (state) => {
+      console.log("clearCart fulfilled"); // ✅ log
+      state.loading = false;
+      state.cartId = null;
+      state.items = [];
+    });
+    builder.addCase(clearCart.rejected, (state, action) => {
+      console.log("clearCart rejected:", action.payload); // ✅ log error
+      state.loading = false;
+      state.error = action.payload;
+    });
   },
 });
 
-export const { clearCartLocal } = cartSlice.actions;
 export default cartSlice.reducer;

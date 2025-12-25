@@ -1,149 +1,117 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useEffect } from "react";
+import { useRouter, useParams } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
-import axios from "axios";
-import Link from "next/link";
 import { toast } from "sonner";
-import { addToCart, fetchCart } from "@/redux/productsSliceTunk/cartSliceTunk";
+import Link from "next/link";
 
-export default function DetailProduct() {
-  const { id } = useParams();
+import { addCartItem, fetchCart } from "@/redux/productsSliceTunk/cartSliceTunk";
+import { fetchProductById, clearSelectedProduct } from "@/redux/productsSliceTunk/productfetchSliceTunk";
+
+export default function ProductPage() {
+  const { id: productId } = useParams();
   const router = useRouter();
-  const productId = id; // MongoDB-safe
-
   const dispatch = useDispatch();
-  const { loading: cartLoading } = useSelector((state) => state.cart);
-  const { user } = useSelector((state) => state.auth);
 
-  const [product, setProduct] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const { user } = useSelector((state) => state.auth);
+  const { loading: cartLoading } = useSelector((state) => state.cart);
+  const { selectedProduct: product, productLoading, productError } = useSelector(
+    (state) => state.products
+  );
 
   // Fetch product details
   useEffect(() => {
-    if (!productId) return;
+    if (productId) {
+      console.log("Fetching product:", productId);
+      dispatch(fetchProductById(productId));
+    }
 
-    setLoading(true);
-    setError(null);
+    // Cleanup on unmount
+    return () => {
+      dispatch(clearSelectedProduct());
+    };
+  }, [productId, dispatch]);
 
-    axios
-      .get(`/api/products/${productId}`)
-      .then((res) => setProduct(res.data.data))
-      .catch((err) =>
-        setError(err.response?.data?.message || "Failed to load product")
-      )
-      .finally(() => setLoading(false));
-  }, [productId]);
-
-  // Fetch user cart when component mounts (optional)
+  // Fetch cart if user is logged in
   useEffect(() => {
     if (user?._id) {
-      dispatch(fetchCart(user._id));
+      console.log("Fetching cart for user:", user._id);
+      dispatch(fetchCart());
     }
   }, [user, dispatch]);
 
-  // Add to cart handler
   const handleAddToCart = async () => {
     if (!user?._id) {
-      toast.error("Please login to add items to cart");
+      toast.error("Login to add items");
       router.push(`/login?redirect=/products/${productId}`);
       return;
     }
 
-    if (!product?._id && !product?.id) {
-      toast.error("Product not available");
+    if (product?.stock <= 0) {
+      toast.error("Product out of stock");
       return;
     }
 
-    const pid = product._id || product.id;
-
     try {
-      await dispatch(
-        addToCart({
-          userId: user._id,
-          productId: pid,
-          quantity: 1,
-        })
-      ).unwrap();
-
-      toast.success("Added to cart");
-
-      // Optionally fetch cart again to update state
-      dispatch(fetchCart(user._id));
+      console.log("Adding product to cart:", product.id);
+      await dispatch(addCartItem({ productId: product.id, quantity: 1 })).unwrap();
+      toast.success("Product added to cart");
+      dispatch(fetchCart()); // Refresh cart after adding
     } catch (err) {
-      console.log(err);
-      toast.error(err?.message || "Failed to add to cart");
+      console.error("Add to cart error:", err);
+      toast.error(err || "Failed to add product");
     }
   };
 
-  if (loading)
-    return (
-      <div className="text-center mt-10 text-gray-500">
-        Loading product...
-      </div>
-    );
+  if (productLoading)
+    return <p className="h-screen text-center py-20">Loading product...</p>;
 
-  if (error)
-    return (
-      <div className="text-center mt-10 text-red-500">
-        {error}
-      </div>
-    );
+  if (productError)
+    return <p className="h-screen text-center py-20 text-red-500">{productError}</p>;
 
   if (!product)
-    return (
-      <div className="text-center mt-10 text-gray-500">
-        Product not found
-      </div>
-    );
+    return <p className="h-screen text-center py-20">Product not found.</p>;
 
   return (
-    <div className="container mx-auto px-4 py-10 grid grid-cols-1 md:grid-cols-2 gap-10">
-      {/* Image */}
-      <div>
+    <div className="min-h-screen grid grid-cols-1 md:grid-cols-2 gap-12 p-6">
+      {/* Product Image */}
+      <div className="bg-gray-100 rounded-2xl p-6 flex items-center justify-center">
         <img
           src={product.image_url}
           alt={product.name}
-          className="w-full rounded-xl border object-cover"
+          className="w-full max-h-[450px] object-contain rounded-xl"
         />
       </div>
 
-      {/* Info */}
+      {/* Product Details */}
       <div>
         <h1 className="text-3xl font-bold">{product.name}</h1>
-        <p className="text-gray-500 mt-2">{product.category}</p>
-        <p className="text-2xl font-semibold mt-4">${product.price}</p>
+        <p className="text-gray-500">{product.category}</p>
 
-        <p className="mt-6 text-gray-700 leading-relaxed">
-          {product.description}
-        </p>
+        <p className="text-2xl font-semibold text-green-600 mt-4">${product.price}</p>
 
-        <p className="mt-4 text-sm">
+        <p className="mt-6 text-gray-700">{product.description}</p>
+
+        <p className="mt-4">
           Stock:{" "}
-          <span
-            className={
-              product.stock > 0 ? "text-green-600" : "text-red-600"
-            }
-          >
-            {product.stock > 0 ? "In Stock" : "Out of Stock"}
+          <span className={product.stock > 0 ? "text-green-600" : "text-red-600"}>
+            {product.stock > 0 ? "Available" : "Out of Stock"}
           </span>
         </p>
 
-        {/* Actions */}
-        <div className="flex gap-4 mt-6">
+        <div className="flex gap-4 mt-8">
           <button
             onClick={handleAddToCart}
             disabled={product.stock === 0 || cartLoading}
-            className="px-6 py-3 rounded-xl bg-black text-white hover:bg-gray-800 disabled:opacity-50 transition"
+            className="bg-black text-white px-6 py-3 rounded-xl hover:bg-gray-800 disabled:opacity-50"
           >
             {cartLoading ? "Adding..." : "Add to Cart"}
           </button>
 
           <Link
             href="/products"
-            className="px-6 py-3 rounded-xl border border-gray-300 hover:bg-gray-100 transition"
+            className="px-6 py-3 border rounded-xl hover:bg-gray-100"
           >
             Back
           </Link>

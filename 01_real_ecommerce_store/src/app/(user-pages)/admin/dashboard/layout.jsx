@@ -28,6 +28,14 @@ export default function AdminDashboardLayout({ children }) {
     }
   }, [user, loading, router]);
 
+  const navLinks = [
+    { name: "Inser Product", path: "/admin/dashboard/insertProduct" },
+    { name: "List of User", path: "/admin/dashboard/adminUserRole" },
+    { name: "Customer Support", path: "/admin/dashboard/" },
+    { name: "Order", path: "/admin/dashboard/" },
+    { name: "Marketing Manager", path: "/admin/dashboard/" },
+  ];
+
   if (loading || !user) {
     return (
       <div className="flex items-center justify-center h-screen">
@@ -49,33 +57,18 @@ export default function AdminDashboardLayout({ children }) {
         </p>
 
         <nav className="space-y-2 mt-6">
-          <Link
-            href="/admin/dashboard"
-            className="block px-3 py-2 rounded-lg hover:bg-gray-100"
-          >
-            Overview
-          </Link>
-
-          <Link
-            href="/admin/dashboard/users"
-            className="block px-3 py-2 rounded-lg hover:bg-gray-100"
-          >
-            Users
-          </Link>
-
-          <Link
-            href="/admin/dashboard/products"
-            className="block px-3 py-2 rounded-lg hover:bg-gray-100"
-          >
-            Products
-          </Link>
-
-          <Link
-            href="/admin/dashboard/orders"
-            className="block px-3 py-2 rounded-lg hover:bg-gray-100"
-          >
-            Orders
-          </Link>
+          <ul>
+            {navLinks.map((link) => (
+              <li key={link.name}>
+                <Link
+                  href={link.path}
+                  className="block px-3 py-2 rounded-lg hover:bg-gray-100 "
+                >
+                  {link.name}
+                </Link>
+              </li>
+            ))}
+          </ul>
 
           {user.isRoot && (
             <Link

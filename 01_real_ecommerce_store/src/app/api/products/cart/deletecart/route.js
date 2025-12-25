@@ -1,22 +1,34 @@
 import { supabaseServer } from "@/lib/supabase";
 import { successResponse, errorResponse } from "@/lib/response";
+import { getUserFromCookies } from "@/lib/getUserFromRequest";
 
-export async function POST(req) {
+export async function DELETE(req) {
   try {
-    const { userId } = await req.json();
+    // 🔐 1️⃣ Get authenticated user (SERVER TRUSTED)
+    const user = await getUserFromCookies(req);
 
-    if (!userId) return errorResponse("Missing userId", 400);
+    if (!user) {
+      return errorResponse("Unauthorized", 401);
+    }
 
-    const { error } = await supabaseServer
+    const userId = user._id.toString();
+
+    // 2️⃣ Delete all cart items for this user
+    const { data, error } = await supabaseServer
       .from("cart_items")
       .delete()
-      .eq("user_id", userId);
+      .eq("user_id", userId)
+      .select(); // return deleted rows
 
-    if (error) return errorResponse(error.message, 500);
+    if (error) {
+      return errorResponse(error.message, 500);
+    }
 
-    return successResponse("Cart cleared");
+    return successResponse("Cart cleared", {
+      deletedItems: data ? data.length : 0
+    });
   } catch (err) {
     console.error("CLEAR CART ERROR:", err);
-    return errorResponse(err.message || "Failed to clear cart", 500);
+    return errorResponse("Failed to clear cart", 500);
   }
 }

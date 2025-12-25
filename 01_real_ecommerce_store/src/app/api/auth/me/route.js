@@ -1,15 +1,26 @@
 import { getUserFromCookies } from "@/lib/getUserFromRequest";
 import { successResponse, errorResponse } from "@/lib/response";
 import connectDB from "@/lib/dbConnection";
+
 export async function GET(req) {
   try {
-     await connectDB();
-    const user = await getUserFromCookies();
+   // console.log("🔗 Connecting to DB...");
+    await connectDB();
+   // console.log("✅ DB connected");
 
-    if (!user) return errorResponse("Unauthorized", 401);
+   // console.log("🔵 Fetching user from cookies...");
+    const user = await getUserFromCookies(req); // ✅ Pass req
 
-    return successResponse("User fetched", user);
+    if (!user) {
+      //console.log("❌ Unauthorized: No valid user found");
+      return errorResponse("Unauthorized", 401);
+    }
+
+    //console.log("👤 User fetched successfully:", user._id);
+    return successResponse("User fetched successfully", user);
+
   } catch (err) {
-    return errorResponse(err.message || "Failed", 500);
+    //console.error("🔥 /api/auth/me error:", err);
+    return errorResponse(err.message || "Failed to fetch user", 500);
   }
 }
