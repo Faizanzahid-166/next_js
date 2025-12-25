@@ -1,12 +1,10 @@
+"use client"; // <--- Add this if this layout will host client pages like verify-otp
 import type { Metadata } from "next";
 import "./globals.css";
 
 // redux store taunk
 import Providers from "@/redux/Providers";
 // import { store } from "@/redux/store";
-
-// auto reload the app
-import AppInit from "./AppInit";
 
 // import components
 import Navbar from "@/components/header/Navbar";
@@ -30,7 +28,7 @@ export default function RootLayout({
         <Providers>
 
           {/* auro reload the appinit */}
-          <AppInit>
+         
 
 
            
@@ -45,7 +43,6 @@ export default function RootLayout({
         {/* Footer (global) */}
         <Footer />
 
-         </AppInit>
 
         </Providers>
       </body>

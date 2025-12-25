@@ -1,0 +1,100 @@
+'use client';
+
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { toast } from 'sonner';
+
+const OTPSchema = z.object({ otp: z.string().min(4, 'OTP must be 4 digits') });
+
+export default function VerifyOTPClient({ email }) {
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
+  const [otpExpired, setOtpExpired] = useState(false);
+
+  const form = useForm({
+    resolver: zodResolver(OTPSchema),
+    defaultValues: { otp: '' },
+  });
+
+  const handleVerify = async (values) => {
+    setLoading(true);
+    try {
+      const res = await fetch('/api/auth/verify-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, otp: values.otp }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        if (data.message?.toLowerCase().includes('expired')) setOtpExpired(true);
+        toast.error(data.message || 'Verification failed');
+        setLoading(false);
+        return;
+      }
+
+      toast.success('Email verified successfully!');
+      router.push('/login');
+    } catch (err) {
+      console.error(err);
+      toast.error('Network error');
+    }
+    setLoading(false);
+  };
+
+  const handleResend = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch('/api/auth/resend-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        toast.error(data.message || 'Failed to resend OTP');
+        setLoading(false);
+        return;
+      }
+
+      toast.success('New OTP sent to your email!');
+      setOtpExpired(false);
+    } catch (err) {
+      console.error(err);
+      toast.error('Network error');
+    }
+    setLoading(false);
+  };
+
+  return (
+    <div className="max-w-md w-full p-6 border rounded-xl shadow bg-white">
+      <h1 className="text-2xl font-semibold mb-4">Verify OTP</h1>
+      <p className="text-gray-500 mb-4">
+        OTP sent to: <b>{email}</b>
+      </p>
+
+      <form onSubmit={form.handleSubmit(handleVerify)} className="space-y-4">
+        <Input placeholder="1234" {...form.register('otp')} />
+        <Button type="submit" className="w-full" disabled={loading}>
+          {loading ? 'Verifying...' : 'Verify OTP'}
+        </Button>
+      </form>
+
+      {otpExpired && (
+        <div className="mt-4 text-center">
+          <p className="text-red-500 mb-2">Your OTP has expired.</p>
+          <Button onClick={handleResend} disabled={loading} className="w-full">
+            {loading ? 'Sending...' : 'Resend OTP'}
+          </Button>
+        </div>
+      )}
+    </div>
+  );
+}
