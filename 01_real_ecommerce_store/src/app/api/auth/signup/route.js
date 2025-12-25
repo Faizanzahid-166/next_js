@@ -1,10 +1,8 @@
-// src/app/api/auth/signup.js
 import dbConnect from "@/lib/dbConnection";
 import User from "@/models/User.model";
-import { hashPassword, generateOTP } from "@/lib/auth";
+import { hashPassword, generateOTP,  } from "@/lib/auth";
 import { sendOtpEmail } from "@/lib/nodemailer";
 import { z } from "zod";
-import bcrypt from "bcryptjs";
 import { successResponse, errorResponse } from "@/lib/response";
 
 // Validation schema
@@ -27,28 +25,21 @@ export async function POST(req) {
 
     const { name, email, password } = parsed.data;
 
-    // Check if email already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return errorResponse("Email already registered", 409);
     }
 
-    // Hash password
     const hashedPassword = await hashPassword(password);
 
-    // Generate OTP
-    const otpObj = generateOTP(); // { code, expiresAt }
-    const otpHashed = await bcrypt.hash(otpObj.code, 10);
+    // Generate 6-digit OTP
+    const otpObj = generateOTP(6);
 
-    // Create user
     const user = await User.create({
       name,
       email,
       password: hashedPassword,
-      otp: {
-        code: otpHashed,
-        expiresAt: otpObj.expiresAt,
-      },
+      otp: { code: otpObj.code, expiresAt: otpObj.expiresAt },
       emailVerified: false,
     });
 
@@ -65,7 +56,6 @@ export async function POST(req) {
       { id: user._id, name: user.name, email: user.email },
       201
     );
-
   } catch (err) {
     console.error("Signup error:", err);
     return errorResponse(err.message || "Signup error", 500);

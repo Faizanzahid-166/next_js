@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -9,14 +9,14 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 
-const OTPSchema = z.object({ otp: z.string().min(4, 'OTP must be 4 digits') });
+const OTPSchema = z.object({ otp: z.string().regex(/^\d{6}$/, 'OTP must be exactly 6 digits') });
 
 export default function VerifyOTPClient({ email }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [otpExpired, setOtpExpired] = useState(false);
 
-  const form = useForm({
+  const { register, handleSubmit, formState: { errors } } = useForm({
     resolver: zodResolver(OTPSchema),
     defaultValues: { otp: '' },
   });
@@ -35,7 +35,6 @@ export default function VerifyOTPClient({ email }) {
       if (!res.ok) {
         if (data.message?.toLowerCase().includes('expired')) setOtpExpired(true);
         toast.error(data.message || 'Verification failed');
-        setLoading(false);
         return;
       }
 
@@ -44,8 +43,9 @@ export default function VerifyOTPClient({ email }) {
     } catch (err) {
       console.error(err);
       toast.error('Network error');
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const handleResend = async () => {
@@ -60,7 +60,6 @@ export default function VerifyOTPClient({ email }) {
       const data = await res.json();
       if (!res.ok) {
         toast.error(data.message || 'Failed to resend OTP');
-        setLoading(false);
         return;
       }
 
@@ -69,19 +68,22 @@ export default function VerifyOTPClient({ email }) {
     } catch (err) {
       console.error(err);
       toast.error('Network error');
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return (
-    <div className="max-w-md w-full p-6 border rounded-xl shadow bg-white">
+    <div className="min-h-screen">
+    <div className="max-w-md mx-auto border mt-10 p-4 rounded-2xl pt-10">
       <h1 className="text-2xl font-semibold mb-4">Verify OTP</h1>
       <p className="text-gray-500 mb-4">
         OTP sent to: <b>{email}</b>
       </p>
 
-      <form onSubmit={form.handleSubmit(handleVerify)} className="space-y-4">
-        <Input placeholder="1234" {...form.register('otp')} />
+      <form onSubmit={handleSubmit(handleVerify)} className="space-y-4">
+        <Input placeholder="123456" {...register('otp')} />
+        {errors.otp && <p className="text-red-500 text-sm">{errors.otp.message}</p>}
         <Button type="submit" className="w-full" disabled={loading}>
           {loading ? 'Verifying...' : 'Verify OTP'}
         </Button>
@@ -95,6 +97,7 @@ export default function VerifyOTPClient({ email }) {
           </Button>
         </div>
       )}
+    </div>
     </div>
   );
 }

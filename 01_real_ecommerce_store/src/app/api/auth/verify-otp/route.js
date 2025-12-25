@@ -1,14 +1,12 @@
-// src/app/api/auth/verify-otp.js
 import dbConnect from "@/lib/dbConnection";
 import User from "@/models/User.model";
 import { z } from "zod";
-import bcrypt from "bcryptjs";
 import { signToken, getAuthCookieHeader } from "@/lib/auth";
 import { successResponse, errorResponse } from "@/lib/response";
 
 const VerifySchema = z.object({
   email: z.string().email("Invalid email"),
-  otp: z.string().min(4, "OTP must be at least 4 digits"),
+  otp: z.string().regex(/^\d{6}$/, "OTP must be exactly 6 digits"),
 });
 
 export async function POST(req) {
@@ -36,11 +34,12 @@ export async function POST(req) {
       return errorResponse("OTP expired. Request a new OTP.", 400);
     }
 
-    // Compare hashed OTP
-    const validOtp = await bcrypt.compare(otp, user.otp.code);
-    if (!validOtp) return errorResponse("Invalid OTP", 400);
+    // Compare OTP
+    if (otp !== user.otp.code) {
+      return errorResponse("Invalid OTP", 400);
+    }
 
-    // Mark email as verified and clear OTP
+    // Mark verified and clear OTP
     user.emailVerified = true;
     user.otp = { code: null, expiresAt: null };
     await user.save();
@@ -67,7 +66,6 @@ export async function POST(req) {
         },
       }
     );
-
   } catch (err) {
     console.error("Verify OTP error:", err);
     return errorResponse(err.message || "OTP verification failed", 500);
