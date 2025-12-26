@@ -1,7 +1,7 @@
 import dbConnect from "@/lib/dbConnection";
 import User from "@/models/User.model";
 import { hashPassword, generateOTP,  } from "@/lib/auth";
-import { sendOtpEmail } from "@/lib/nodemailer";
+import { sendVerificationEmail  } from "@/lib/resend";
 import { z } from "zod";
 import { successResponse, errorResponse } from "@/lib/response";
 
@@ -45,7 +45,7 @@ export async function POST(req) {
 
     // Send OTP email
     try {
-      await sendOtpEmail(email, otpObj.code);
+      await sendVerificationEmail (email, otpObj.code);
     } catch (err) {
       console.error("Failed to send OTP email:", err);
       return errorResponse("Failed to send OTP email", 500);

@@ -1,7 +1,7 @@
 import dbConnect from "@/lib/dbConnection";
 import User from "@/models/User.model";
 import { generateOTP } from "@/lib/auth";
-import { sendOtpEmail } from "@/lib/nodemailer";
+import { sendOtpEmail } from "@/lib/resend";
 import { successResponse, errorResponse } from "@/lib/response";
 
 export async function POST(req) {
