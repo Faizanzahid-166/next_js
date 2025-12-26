@@ -47,7 +47,8 @@ export default function SignupPage() {
     }
 
     toast.success("OTP sent to your email!");
-    router.push(`/verify-otp?email=${values.email}`);
+   router.push(`/verify-otp?email=${encodeURIComponent(values.email)}`);
+
   }
 
   return (

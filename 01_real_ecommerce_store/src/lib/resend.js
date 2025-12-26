@@ -3,13 +3,13 @@ import VerificationEmail from "../../email/VerificationEmail";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-export async function sendVerificationEmail(email, username, verifyCode) {
+export async function sendVerificationEmail(email, name, verifyCode) {
   try {
     await resend.emails.send({
       from: `Blitz Ecommerce <${process.env.RESEND_FROM_EMAIL}>`, // ✅ plain text
       to: email,
       subject: "Blitz Ecommerce | Verification Code", // ✅ plain text
-      react: VerificationEmail({ username, otp: verifyCode }), // ✅ React email content
+      react: VerificationEmail({ name, otp: verifyCode }), // ✅ React email content
     });
 
     return {

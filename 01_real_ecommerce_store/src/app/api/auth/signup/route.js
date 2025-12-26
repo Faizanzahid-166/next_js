@@ -45,7 +45,7 @@ export async function POST(req) {
 
     // Send OTP email
     try {
-      await sendVerificationEmail (email, otpObj.code);
+      await sendVerificationEmail (email,username, otpObj.code);
     } catch (err) {
       console.error("Failed to send OTP email:", err);
       return errorResponse("Failed to send OTP email", 500);
@@ -58,6 +58,7 @@ export async function POST(req) {
     );
   } catch (err) {
     console.error("Signup error:", err);
+    console.log(err)
     return errorResponse(err.message || "Signup error", 500);
   }
 }
