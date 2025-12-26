@@ -6,7 +6,10 @@ import VerifyOTPClient from './VerifyOTPClient';
 
 export default function VerifyOTPPage() {
   const searchParams = useSearchParams();
-  const email = searchParams?.get('email');
+  const emailParam = searchParams?.get('email') || '';
+  const email = decodeURIComponent(emailParam);
+  console.log("Email param:", emailParam, "Decoded:", email);
+
 
   if (!email) {
     return (
