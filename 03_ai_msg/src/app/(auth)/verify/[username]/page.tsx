@@ -24,7 +24,7 @@ export default function VerifyPage() {
 
     setLoading(true);
     try {
-      const res = await axios.post<ApiResponse>("/api/verify", {
+      const res = await axios.post<ApiResponse>("/api/verify-code", {
         username,
         code,
       });
