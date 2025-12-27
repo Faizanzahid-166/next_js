@@ -5,7 +5,13 @@ import { setTokenCookie, clearTokenCookie } from "./cookie";
 
 /* -------------------- ENV -------------------- */
 const JWT_SECRET = process.env.JWT_SECRET;
-if (!JWT_SECRET) throw new Error("JWT_SECRET is not set");
+export function requireJWTSecret() {
+  if (!JWT_SECRET) {
+    throw new Error("JWT_SECRET is not set");
+  }
+  return JWT_SECRET;
+}
+
 
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || "7d";
 const OTP_EXPIRES_MIN = Number(process.env.OTP_EXPIRES_MIN || 10);

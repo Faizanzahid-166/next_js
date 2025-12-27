@@ -51,6 +51,7 @@ export const authOptions: NextAuthOptions = {
   ],
   callbacks: {
     async jwt({ token, user, account }) {
+      // Credentials login or first sign-in
       if (user) {
         token.id = user.id ?? token.id;
         token._id = user._id ?? token._id;
@@ -61,20 +62,29 @@ export const authOptions: NextAuthOptions = {
           user.isAcceptingMessage ?? token.isAcceptingMessage;
       }
 
-      // Optional: flag for Google login
-      if (account?.provider === "google") {
-        token.isGoogle = true;
+      // Google login: populate JWT from MongoDB
+      if (account?.provider === "google" && !user) {
+        await dbConnect();
+        const dbUser = await UserModel.findOne({ email: token.email });
+        if (dbUser) {
+          token._id = dbUser._id.toString();
+          token.username = dbUser.username;
+          token.isVerified = dbUser.isVerified;
+          token.isAcceptingMessage = dbUser.isAcceptingMessage;
+        }
       }
 
       return token;
     },
     async session({ session, token }) {
-      session.user.id = token.id as string;
-      session.user._id = token._id as string | undefined;
-      session.user.username = token.username;
-      session.user.email = token.email;
-      session.user.isVerified = token.isVerified;
-      session.user.isAcceptingMessage = token.isAcceptingMessage;
+      if (session.user) {
+        session.user.id = token.id as string;
+        session.user._id = token._id as string | undefined;
+        session.user.username = token.username;
+        session.user.email = token.email;
+        session.user.isVerified = token.isVerified;
+        session.user.isAcceptingMessage = token.isAcceptingMessage;
+      }
       return session;
     },
   },
