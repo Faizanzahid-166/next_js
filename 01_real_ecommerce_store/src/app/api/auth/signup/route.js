@@ -45,7 +45,7 @@ export async function POST(req) {
 
     // Send OTP email
     try {
-      await sendVerificationEmail (email,username, otpObj.code);
+      await sendVerificationEmail (email,name, otpObj.code);
     } catch (err) {
       console.error("Failed to send OTP email:", err);
       return errorResponse("Failed to send OTP email", 500);
