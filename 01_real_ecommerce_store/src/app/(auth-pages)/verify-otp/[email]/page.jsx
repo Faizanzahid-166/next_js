@@ -9,7 +9,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 
-// OTP validation schema
 const OTPSchema = z.object({
   otp: z.string().regex(/^\d{6}$/, 'OTP must be exactly 6 digits'),
 });
@@ -17,7 +16,6 @@ const OTPSchema = z.object({
 export default function VerifyOTPPage() {
   const params = useParams();
   const router = useRouter();
-
   const email = params?.email ? decodeURIComponent(params.email) : '';
 
   const [loading, setLoading] = useState(false);
@@ -31,9 +29,7 @@ export default function VerifyOTPPage() {
   if (!email) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <p className="text-red-500 text-center text-lg">
-          Error: email missing.
-        </p>
+        <p className="text-red-500 text-center text-lg">Error: email missing.</p>
       </div>
     );
   }
@@ -46,15 +42,12 @@ export default function VerifyOTPPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, otp: values.otp }),
       });
-
       const data = await res.json();
-
       if (!res.ok) {
         if (data.message?.toLowerCase().includes('expired')) setOtpExpired(true);
         toast.error(data.message || 'Verification failed');
         return;
       }
-
       toast.success('Email verified successfully!');
       router.push('/login');
     } catch (err) {
@@ -73,13 +66,11 @@ export default function VerifyOTPPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email }),
       });
-
       const data = await res.json();
       if (!res.ok) {
         toast.error(data.message || 'Failed to resend OTP');
         return;
       }
-
       toast.success('New OTP sent to your email!');
       setOtpExpired(false);
     } catch (err) {

@@ -38,18 +38,19 @@ export default function SignupPage() {
     defaultValues: { name: "", email: "", password: "" },
   });
 
-  async function onSubmit(values) {
-    const result = await dispatch(signupUser(values));
+ async function onSubmit(values) {
+  const result = await dispatch(signupUser(values));
 
-    if (signupUser.rejected.match(result)) {
-      toast.error(result.payload?.message || "Signup failed");
-      return;
-    }
-
-    toast.success("OTP sent to your email!");
-   router.push(`/verify-otp?email=${encodeURIComponent(values.email)}`);
-
+  if (signupUser.rejected.match(result)) {
+    toast.error(result.payload?.message || "Signup failed");
+    return;
   }
+
+  toast.success("OTP sent to your email!");
+
+  // Navigate to dynamic route
+  router.push(`/verify-otp/${encodeURIComponent(values.email)}`);
+}
 
   return (
     <div className="min-h-screen">
