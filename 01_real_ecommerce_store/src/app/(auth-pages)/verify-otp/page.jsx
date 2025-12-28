@@ -10,9 +10,17 @@ export default function VerifyOTPPage() {
   const emailParam = searchParams?.get('email') || '';
   const email = decodeURIComponent(emailParam);
 
+  // Early return if email is missing
   if (!email) {
-    return <p className="text-center pt-10 text-red-500">Error: email missing.</p>;
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-red-500 text-center text-lg">
+          Error: email is missing from the URL.
+        </p>
+      </div>
+    );
   }
 
+  // Pass email to the client component
   return <VerifyOTPClient email={email} />;
 }
