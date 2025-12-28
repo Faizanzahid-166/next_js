@@ -35,16 +35,15 @@ export default function Navbar() {
 
   const navLinks = [
     { name: "Home", path: "/" },
-    { name: "Store", path: "/products" },
     { name: "About", path: "/about" },
+     { name: "Contact", path: "/contact" },
     { name: "Profile", path: profilePath },
-    { name: "Cart", path: "/cart" },
   ];
 
   return (
-    <nav className="bg-gray-700 text-white px-6 py-4 flex items-center">
+    <nav className="bg-black text-white px-6 py-4 flex items-center">
       {/* Logo */}
-      <div className="text-2xl font-bold flex-shrink-0">Blitz Chat Store</div>
+      <div className="text-2xl font-bold flex-shrink-0">Blitz Chat App</div>
 
       {/* Center links */}
       <ul className="flex-1 flex justify-center gap-6">

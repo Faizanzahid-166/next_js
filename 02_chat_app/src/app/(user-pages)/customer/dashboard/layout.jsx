@@ -44,26 +44,13 @@ export default function DashboardLayout({ children }) {
         <h2 className="text-xl font-bold mb-6">Dashboard</h2>
 
         <nav className="space-y-2">
-          <Link className="block px-3 py-2 rounded-lg hover:bg-gray-100" href="/dashboard">
+          <Link className="block px-3 py-2 rounded-lg hover:bg-gray-100" href="/customer/dashboard">
             Profile Overview
-          </Link>
-
-          <Link className="block px-3 py-2 rounded-lg hover:bg-gray-100" href="/chat-page">
-            My Chat App
           </Link>
 
           <Link className="block px-3 py-2 rounded-lg hover:bg-gray-100" href="/chat-window">
             chat window
           </Link>
-
-          {user.role === "customer" && (
-            <Link
-              className="block px-3 py-2 rounded-lg hover:bg-gray-100 text-green-600"
-              href="/customer/dashboard/admin-request"
-            >
-              Request Admin Access
-            </Link>
-          )}
         </nav>
 
         <button
