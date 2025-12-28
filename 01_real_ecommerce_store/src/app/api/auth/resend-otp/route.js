@@ -1,7 +1,7 @@
 import dbConnect from "@/lib/dbConnection";
 import User from "@/models/User.model";
 import { generateOTP } from "@/lib/auth";
-import { sendOtpEmail } from "@/lib/resend";
+import { sendVerificationEmail } from "@/lib/resend"; // ✅ use correct export
 import { successResponse, errorResponse } from "@/lib/response";
 
 export async function POST(req) {
@@ -13,10 +13,7 @@ export async function POST(req) {
 
     const user = await User.findOne({ email });
     if (!user) return errorResponse("User not found", 404);
-
-    if (user.emailVerified) {
-      return errorResponse("Email already verified", 400);
-    }
+    if (user.emailVerified) return errorResponse("Email already verified", 400);
 
     // Generate new OTP
     const otpObj = generateOTP();
@@ -24,8 +21,8 @@ export async function POST(req) {
     await user.save();
 
     // Send OTP email
-    await sendOtpEmail(email, otpObj.code).catch(err =>
-      console.log("OTP email error", err)
+    await sendVerificationEmail(email, user.name, otpObj.code).catch(err =>
+      console.error("OTP email error:", err)
     );
 
     return successResponse("New OTP sent", { email: user.email });
