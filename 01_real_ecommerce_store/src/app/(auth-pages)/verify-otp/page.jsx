@@ -10,6 +10,7 @@ export default function VerifyOTPPage() {
   const emailParam = searchParams?.get('email') || '';
   const email = decodeURIComponent(emailParam);
 
+  
   // Early return if email is missing
   if (!email) {
     return (

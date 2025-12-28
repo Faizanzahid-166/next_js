@@ -5,6 +5,7 @@ import { sendVerificationEmail } from "@/lib/resend"; // ✅ use correct export
 import { successResponse, errorResponse } from "@/lib/response";
 
 export async function POST(req) {
+  
   try {
     await dbConnect();
 

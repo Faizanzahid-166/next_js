@@ -2,8 +2,8 @@ import User from "@/models/User.model";
 import bcrypt from "bcryptjs";
 
 export async function createRootAdmin() {
-  const rootEmail = process.env.DEFAULT_ADMIN_EMAIL || "admin@shop.com";
-  const rootPassword = process.env.DEFAULT_ADMIN_PASSWORD || "admin123";
+  const rootEmail = process.env.DEFAULT_ADMIN_EMAIL || "";
+  const rootPassword = process.env.DEFAULT_ADMIN_PASSWORD || "";
 
   // Check if root admin already exists
   const admin = await User.findOne({ email: rootEmail });
