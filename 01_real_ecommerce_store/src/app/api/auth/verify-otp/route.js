@@ -37,33 +37,34 @@ export async function POST(req) {
     }
 
     // Compare OTP
-    if (otp !== user.otp.code) {
-      return errorResponse("Invalid OTP", 400);
-    }
+   // Compare OTP
+if (otp !== user.otp.code) {
+  return errorResponse("Invalid OTP", 400);
+}
 
-    // Mark verified and clear OTP
-    user.emailVerified = true;
-    user.otp = { code: null, expiresAt: null };
-    await user.save();
+// Mark verified and clear OTP
+user.emailVerified = true;
+user.otp = undefined; // ✅ FIX
+await user.save();
 
-    // Sign JWT (async)
-    const token = await signToken({ id: user._id });
-    const cookie = getAuthCookieHeader(token);
+// Sign JWT
+const token = await signToken({ id: user._id });
+const cookie = getAuthCookieHeader(token);
 
-    // Return standardized success response
-    return successResponse(
-      "Email verified successfully",
-      {
-        user: {
-          id: user._id,
-          name: user.name,
-          email: user.email,
-          role: user.role,
-        },
-      },
-      200,
-      { "Set-Cookie": cookie } // pass headers if your helper supports
-    );
+return successResponse(
+  "Email verified successfully",
+  {
+    user: {
+      id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+    },
+  },
+  200,
+  { "Set-Cookie": cookie }
+);
+
   } catch (err) {
     console.error("Verify OTP error:", err);
     return errorResponse(err.message || "OTP verification failed", 500);
