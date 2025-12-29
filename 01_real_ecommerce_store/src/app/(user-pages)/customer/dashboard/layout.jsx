@@ -13,20 +13,19 @@ export default function DashboardLayout({ children }) {
   const { user, loading } = useSelector((state) => state.auth);
 
   // Load user before showing dashboard
-  useEffect(() => {
-    if (!user) {
-      dispatch(fetchUser());
-    } else {
-      // Role-based redirect
-      if (user.role === "admin") {
-        router.replace("/admin/dashboard");
-      } else if (user.role === "customer") {
-        router.replace("/customer/dashboard");
-      } else {
-        router.replace("/login"); // fallback
-      }
+useEffect(() => {
+  if (!user) {
+    dispatch(fetchUser());
+  } else {
+    const path = router.pathname; // or use `usePathname` in Next.js 16
+    if (user.role === "admin" && !path.startsWith("/admin")) {
+      router.replace("/admin/dashboard");
+    } else if (user.role === "customer" && !path.startsWith("/customer")) {
+      router.replace("/customer/dashboard");
     }
-  }, [user, dispatch, router]);
+  }
+}, [user, dispatch, router]);
+
 
   if (loading || !user) {
     return (
