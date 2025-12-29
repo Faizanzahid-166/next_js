@@ -1,5 +1,4 @@
 //"use client"; // <--- Add this if this layout will host client pages like verify-otp
-"use client";  // <-- ADD THIS AT THE TOP
 import type { Metadata } from "next";
 import "./globals.css";
 

@@ -1,4 +1,6 @@
 // app/layout.js
+"use client";
+
 import "./globals.css";
 import Providers from "@/redux/Providers";
 import Navbar from "@/components/header/Navbar";

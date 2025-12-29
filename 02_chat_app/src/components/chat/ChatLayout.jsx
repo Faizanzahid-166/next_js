@@ -1,3 +1,5 @@
+"use client";
+
 import UserList from "./UserList";
 import ChatWindow from "./ChatWindow";
 
