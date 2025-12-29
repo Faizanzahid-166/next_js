@@ -7,7 +7,9 @@
     "next": "next dev",
     "socket": "node server.js",
     "dev": "concurrently \"npm run next\" \"npm run socket\"",
-    "lint": "eslint"
+    "lint": "eslint",
+      "build": "next build",
+  "start": "node server.js"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

@@ -10,25 +10,22 @@ import { cookies } from "next/headers";
  */
 export async function getUserFromCookies(token) {
   try {
-    // Use provided token (Socket.IO) or read from request cookies (API routes)
     let jwtToken = token;
 
     if (!jwtToken) {
       const cookieStore = await cookies();
       jwtToken = cookieStore.get("token")?.value;
+      console.log("Cookie token:", jwtToken);
     }
 
     if (!jwtToken) return null;
 
-    // Connect to MongoDB
-    await mongodb();
-
-    // ✅ Await JWT verification
+    console.log("🔐 VERIFY TOKEN LENGTH:", jwtToken.length);
     const payload = await verifyToken(jwtToken);
+    console.log("Token payload:", payload);
 
-    // Find user in DB, exclude password
+    await mongodb();
     const user = await User.findById(payload.userId).select("-password");
-
     return user || null;
   } catch (err) {
     console.error("🔥 ERROR in getUserFromCookies:", err);
