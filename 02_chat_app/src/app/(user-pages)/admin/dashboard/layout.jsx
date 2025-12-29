@@ -1,42 +1,19 @@
 "use client";
 
-import { useEffect } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useDispatch, useSelector } from "react-redux";
-import { logoutUser, fetchMe } from "@/redux/authSliceTunk/authSlice";
 
 export default function AdminDashboardLayout({ children }) {
-  const dispatch = useDispatch();
-  const router = useRouter();
+  // You can replace these with props if needed
+  const user = {
+    name: "Admin User",
+    role: "admin",
+    isRoot: true,
+  };
 
-  const { user, loading } = useSelector((state) => state.auth);
-
-  // 🔐 Load user once
-  useEffect(() => {
-    if (!user) {
-      dispatch(fetchMe());
-    }
-  }, [dispatch, user]);
-
-  // 🔐 Guard admin route
-  useEffect(() => {
-    if (!loading && user) {
-      if (user.role !== "admin") {
-        router.replace("/login");
-      }
-    }
-  }, [user, loading, router]);
-
-  if (loading || !user) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <p className="text-lg animate-pulse">
-          Loading admin dashboard...
-        </p>
-      </div>
-    );
-  }
+  const handleLogout = () => {
+    // Add your logout logic here
+    console.log("Logout clicked");
+  };
 
   return (
     <div className="min-h-screen flex bg-gray-100">
@@ -88,14 +65,14 @@ export default function AdminDashboardLayout({ children }) {
         </nav>
 
         <button
-          onClick={() => dispatch(logoutUser())}
+          onClick={handleLogout}
           className="mt-6 w-full px-3 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
         >
           Logout
         </button>
       </aside>
 
-      {/* Content */}
+      {/* Main content */}
       <main className="flex-1 p-8">{children}</main>
     </div>
   );
