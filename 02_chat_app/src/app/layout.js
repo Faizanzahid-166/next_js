@@ -1,14 +1,8 @@
-// global.tailwind.css
+// app/layout.js
 import "./globals.css";
-
-//  react-redux 
 import Providers from "@/redux/Providers";
-
-// import components
 import Navbar from "@/components/header/Navbar";
 import Footer from "@/components/footer/Footer";
-
-// import toaster notificatiion
 import { Toaster } from "@/components/ui/sonner";
 
 export const metadata = {
@@ -20,25 +14,19 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body>
-
         {/* redux store provider */}
         <Providers>
+          {/* Navbar (global) */}
+          <Navbar />
 
-      
+          {/* Main content */}
+          <main className="mx-auto px-4">{children}</main>
 
-        {/* Navbar (global) */}
-        <Navbar />
+          {/* Toaster notifications */}
+          <Toaster position="top-right" />
 
-        {/* Main content (replacement for Outlet) */}
-        <main className="mx-auto px-auto"> 
-          {children}
-        </main>
-
-        <Toaster position="top-right" /> {/* render toast notifications */}
-
-        {/* Footer (global) */}
-        <Footer />
-
+          {/* Footer (global) */}
+          <Footer />
         </Providers>
       </body>
     </html>
