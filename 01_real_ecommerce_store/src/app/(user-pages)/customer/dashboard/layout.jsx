@@ -5,26 +5,37 @@ import { useSelector, useDispatch } from "react-redux";
 import { logoutUser } from "@/redux/authSliceTunk/authSlice";
 import { useEffect } from "react";
 import { fetchUser } from "@/redux/authSliceTunk/authSlice";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 
 export default function DashboardLayout({ children }) {
   const dispatch = useDispatch();
   const router = useRouter();
+  const pathname = usePathname(); // ✅ correct
   const { user, loading } = useSelector((state) => state.auth);
 
   // Load user before showing dashboard
-useEffect(() => {
-  if (!user) {
-    dispatch(fetchUser());
-  } else {
-    const path = router.pathname; // or use `usePathname` in Next.js 16
-    if (user.role === "admin" && !path.startsWith("/admin")) {
+
+  useEffect(() => {
+    // wait until auth is resolved
+    if (loading) return;
+
+    if (!user) {
+      dispatch(fetchUser());
+      return;
+    }
+
+    if (!pathname) return;
+
+    if (user.role === "admin" && !pathname.startsWith("/admin")) {
       router.replace("/admin/dashboard");
-    } else if (user.role === "customer" && !path.startsWith("/customer")) {
+    } else if (
+      user.role === "customer" &&
+      !pathname.startsWith("/customer")
+    ) {
       router.replace("/customer/dashboard");
     }
-  }
-}, [user, dispatch, router]);
+  }, [user, loading, pathname, dispatch, router]);
+
 
 
   if (loading || !user) {

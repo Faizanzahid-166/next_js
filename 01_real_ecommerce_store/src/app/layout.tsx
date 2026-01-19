@@ -26,11 +26,6 @@ export default function RootLayout({
 
         {/* redux store provider */}
         <Providers>
-
-          {/* auro reload the appinit */}
-         
-
-
            
         {/* Navbar (global) */}
         <Navbar />
