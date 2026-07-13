@@ -28,7 +28,7 @@ export async function POST(req) {
   }
 
   const { data, error } = await supabaseServer
-    .from("ecommerce_store_products")
+    .from("03_ecommerce_store_products")
     .insert([
       {
         product_no,
@@ -47,3 +47,4 @@ export async function POST(req) {
 
   return successResponse("Product created successfully", data);
 }
+

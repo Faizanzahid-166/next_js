@@ -18,7 +18,7 @@ export async function DELETE(req, { params }) {
   if (!id) return errorResponse("Product ID is required", 400);
 
   const { error } = await supabaseServer
-    .from("ecommerce_store_products")
+    .from("03_ecommerce_store_products")
     .delete()
     .eq("id", id);
 

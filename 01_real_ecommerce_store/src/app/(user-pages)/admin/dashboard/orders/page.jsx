@@ -119,17 +119,16 @@ function AdminOrdersContent() {
           </thead>
           <tbody className="divide-y divide-gray-200">
             {orders?.map((order) => (
-              <tr key={order._id} className="hover:bg-gray-50 align-top">
+              <tr key={order._id || order.id} className="hover:bg-gray-50 align-top">
                 <td className="px-3 py-3 font-mono text-xs">
-                  {order._id.slice(-8).toUpperCase()}
+                  {(order._id || order.id).slice(-12).toUpperCase()}
                 </td>
                 <td className="px-3 py-3">
-                  <p className="font-medium">{order.userId?.name || "Unknown"}</p>
-                  <p className="text-gray-500 text-xs">{order.userId?.email}</p>
-                  {!userIdParam && order.userId?._id && (
+                  <p className="font-medium text-xs text-gray-700 break-all">{order.user_id || "Unknown"}</p>
+                  {!userIdParam && order.user_id && (
                     <button
                       onClick={() =>
-                        router.push(`/admin/dashboard/orders?userId=${order.userId._id}`)
+                        router.push(`/admin/dashboard/orders?userId=${order.user_id}`)
                       }
                       className="text-indigo-600 text-xs hover:underline mt-1"
                     >
@@ -155,11 +154,10 @@ function AdminOrdersContent() {
                   <select
                     value={order.payment?.status}
                     onChange={(e) =>
-                      handleStatusChange(order._id, "paymentStatus", e.target.value)
+                      handleStatusChange(order._id || order.id, "paymentStatus", e.target.value)
                     }
-                    className={`text-xs rounded-full px-2 py-1 border-none ${
-                      paymentStatusColors[order.payment?.status] || ""
-                    }`}
+                    className={`text-xs rounded-full px-2 py-1 border-none ${paymentStatusColors[order.payment?.status] || ""
+                      }`}
                   >
                     {PAYMENT_STATUS_OPTIONS.map((s) => (
                       <option key={s} value={s}>
@@ -188,7 +186,7 @@ function AdminOrdersContent() {
                   <select
                     value={order.status}
                     onChange={(e) =>
-                      handleStatusChange(order._id, "orderStatus", e.target.value)
+                      handleStatusChange(order._id || order.id, "orderStatus", e.target.value)
                     }
                     className="text-xs border rounded-lg px-2 py-1"
                   >

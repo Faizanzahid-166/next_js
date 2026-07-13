@@ -7,3 +7,4 @@ export function applyPagination({ page = 1, limit = 12 }) {
 
   return { from, to, page, limit };
 }
+

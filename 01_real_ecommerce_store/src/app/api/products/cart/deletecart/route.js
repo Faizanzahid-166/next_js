@@ -15,7 +15,7 @@ export async function DELETE(req) {
 
     // 2️⃣ Delete all cart items for this user
     const { data, error } = await supabaseServer
-      .from("cart_items")
+      .from("03_cart_items")
       .delete()
       .eq("user_id", userId)
       .select(); // return deleted rows
@@ -32,3 +32,4 @@ export async function DELETE(req) {
     return errorResponse("Failed to clear cart", 500);
   }
 }
+

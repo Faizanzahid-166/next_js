@@ -1,5 +1,3 @@
-import dbConnect from "@/lib/dbConnection";
-import Order from "@/models/Order.model";
 import { supabaseServer } from "@/lib/supabase";
 import { getUserFromCookies } from "@/lib/getUserFromRequest";
 import { successResponse, errorResponse } from "@/lib/response";
@@ -21,8 +19,6 @@ const orderSchema = z.object({
 });
 
 export async function POST(req) {
-  await dbConnect();
-
   try {
     const user = await getUserFromCookies(req);
     if (!user) return errorResponse("Unauthorized", 401);
@@ -39,8 +35,9 @@ export async function POST(req) {
       return errorResponse("Invalid payment method", 400);
     }
 
+    // 1️⃣ Fetch cart
     const { data: cart, error: cartError } = await supabaseServer
-      .from("carts")
+      .from("03_carts")
       .select("id")
       .eq("user_id", user._id.toString())
       .single();
@@ -48,12 +45,13 @@ export async function POST(req) {
     if (cartError) return errorResponse(cartError.message, 500);
     if (!cart) return errorResponse("Cart not found", 404);
 
+    // 2️⃣ Fetch cart items with product details
     const { data: cartItems, error: cartItemsError } = await supabaseServer
-      .from("cart_items")
+      .from("03_cart_items")
       .select(`
         product_id,
         quantity,
-        ecommerce_store_products (
+        03_ecommerce_store_products (
           name,
           price,
           image_url
@@ -66,45 +64,76 @@ export async function POST(req) {
 
     const items = cartItems.map((item) => ({
       productId: item.product_id,
-      name: item.ecommerce_store_products?.name || "Unknown product",
-      price: item.ecommerce_store_products?.price || 0,
+      name: item["03_ecommerce_store_products"]?.name || "Unknown product",
+      price: item["03_ecommerce_store_products"]?.price || 0,
       quantity: item.quantity,
-      image_url: item.ecommerce_store_products?.image_url || "",
+      image_url: item["03_ecommerce_store_products"]?.image_url || "",
     }));
 
     const subTotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
     const totalAmount = subTotal + DELIVERY_FEE;
 
-    const order = await Order.create({
-      userId: user._id,
-      items,
-      shippingAddress,
-      pricing: {
-        subTotal,
-        deliveryCharge: DELIVERY_FEE,
-        discount: 0,
-        totalAmount,
-      },
-      payment: {
-        method,
-        status: method === "COD" ? "PENDING" : "PAID",
-        channel: null,
-      },
-      status: "PLACED",
-    });
+    // 3️⃣ Insert into 03_orders
+    const { data: order, error: orderError } = await supabaseServer
+      .from("03_orders")
+      .insert({
+        user_id: user._id.toString(),
+        total_amount: totalAmount,
+        status: "PLACED",
+        payment_method: method,
+        payment_status: method === "COD" ? "PENDING" : "PAID",
+        payment_channel: null,
+        transaction_id: null,
+        proof_image: null,
+        sub_total: subTotal,
+        delivery_charge: DELIVERY_FEE,
+        shipping_full_name: shippingAddress.fullName,
+        shipping_phone: shippingAddress.phone,
+        shipping_address: shippingAddress.address,
+        shipping_city: shippingAddress.city,
+        shipping_country: shippingAddress.country,
+        shipping_postal_code: shippingAddress.postalCode,
+      })
+      .select()
+      .single();
+
+    if (orderError) return errorResponse(orderError.message, 500);
+
+    // 4️⃣ Insert into 03_order_items
+    const orderItems = items.map((item) => ({
+      order_id: order.id,
+      product_id: item.productId,
+      quantity: item.quantity,
+      price_at_purchase: item.price,
+    }));
+
+    const { error: itemsError } = await supabaseServer
+      .from("03_order_items")
+      .insert(orderItems);
+
+    if (itemsError) {
+      console.error("Failed to insert order items:", itemsError);
+    }
+
+    // 5️⃣ Handle payment
+    const codOrder = {
+      id: order.id,
+      pricing: { deliveryCharge: DELIVERY_FEE },
+    };
 
     let result;
     switch (method) {
       case "COD":
-        result = await handleCODPayment(order);
+        result = await handleCODPayment(codOrder);
         break;
       default:
         return errorResponse("Invalid payment method", 400);
     }
 
+    // 6️⃣ Clear cart on success
     if (result?.success) {
       const { error: clearError } = await supabaseServer
-        .from("cart_items")
+        .from("03_cart_items")
         .delete()
         .eq("cart_id", cart.id);
 
@@ -114,7 +143,7 @@ export async function POST(req) {
     }
 
     return successResponse(result.message, {
-      orderId: order._id,
+      orderId: order.id,
       deliveryFee: DELIVERY_FEE,
       payment: result.data,
     });

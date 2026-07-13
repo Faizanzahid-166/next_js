@@ -30,7 +30,7 @@ export async function POST(req) {
 
     // 2️⃣ Check product & stock
     const { data: product, error: productError } = await supabaseServer
-      .from("ecommerce_store_products")
+      .from("03_ecommerce_store_products")
       .select("id, stock")
       .eq("id", productId)
       .single();
@@ -50,7 +50,7 @@ export async function POST(req) {
 
     // 3️⃣ Fetch or create the user's cart
     let { data: cart, error: cartFetchError } = await supabaseServer
-      .from("carts")
+      .from("03_carts")
       .select("*")
       .eq("user_id", userId)
       .maybeSingle();
@@ -62,7 +62,7 @@ export async function POST(req) {
       console.log("➕ Creating new cart");
 
       const { data: newCart, error: cartError } = await supabaseServer
-        .from("carts")
+        .from("03_carts")
         .insert({ user_id: userId })
         .select()
         .single();
@@ -82,7 +82,7 @@ export async function POST(req) {
     // 4️⃣ Check existing cart item
     const { data: existingItem, error: existingItemError } =
       await supabaseServer
-        .from("cart_items")
+        .from("03_cart_items")
         .select("*")
         .eq("cart_id", cartId)
         .eq("product_id", productId)
@@ -96,7 +96,7 @@ export async function POST(req) {
       console.log("🗑 Removing item from cart");
 
       await supabaseServer
-        .from("cart_items")
+        .from("03_cart_items")
         .delete()
         .eq("id", existingItem.id);
 
@@ -112,7 +112,7 @@ export async function POST(req) {
       console.log("✏️ Updating cart item quantity");
 
       const { error } = await supabaseServer
-        .from("cart_items")
+        .from("03_cart_items")
         .update({ quantity })
         .eq("id", existingItem.id);
 
@@ -128,7 +128,7 @@ export async function POST(req) {
         quantity,
       });
 
-      const { error } = await supabaseServer.from("cart_items").insert({
+      const { error } = await supabaseServer.from("03_cart_items").insert({
         cart_id: cartId,
         product_id: productId,
         quantity,
@@ -144,12 +144,12 @@ export async function POST(req) {
     // 7️⃣ Fetch updated cart items
     const { data: cartItems, error: cartItemsError } =
       await supabaseServer
-        .from("cart_items")
+        .from("03_cart_items")
         .select(`
           id,
           product_id,
           quantity,
-          ecommerce_store_products (
+          03_ecommerce_store_products (
             id,
             name,
             price,
@@ -168,7 +168,7 @@ export async function POST(req) {
 
     // 8️⃣ Return full cart
     const items = cartItems.map(item => {
-      const product = item.ecommerce_store_products; // ✅ FIXED NAME
+      const product = item["03_ecommerce_store_products"]; // ✅ FIXED NAME
       return {
         id: item.id,
         productId: item.product_id,
@@ -188,3 +188,4 @@ export async function POST(req) {
     return errorResponse("Failed to update cart", 500);
   }
 }
+

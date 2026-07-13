@@ -8,3 +8,4 @@ export async function POST() {
     headers: { "Set-Cookie": header },
   });
 }
+

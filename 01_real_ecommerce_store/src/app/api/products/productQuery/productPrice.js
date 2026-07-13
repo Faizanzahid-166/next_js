@@ -18,3 +18,4 @@ export function applyPriceFilter(query, price) {
 
   return query;
 }
+

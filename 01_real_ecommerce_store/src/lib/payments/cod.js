@@ -14,7 +14,7 @@ export async function handleCODPayment(order) {
     success: true,
     message: "Order placed. Please pay the delivery fee using one of the following methods.",
     data: {
-      orderId: order._id,
+      orderId: order.id,
       deliveryFee,
       paymentMethods: [
         {

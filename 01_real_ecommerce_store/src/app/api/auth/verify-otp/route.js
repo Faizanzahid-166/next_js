@@ -53,3 +53,4 @@ export async function POST(req) {
     return errorResponse(err.message || "OTP verification failed", 500);
   }
 }
+

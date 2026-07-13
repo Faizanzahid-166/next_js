@@ -24,3 +24,4 @@ export async function GET(req) {
     return errorResponse(err.message || "Failed to fetch user", 500);
   }
 }
+

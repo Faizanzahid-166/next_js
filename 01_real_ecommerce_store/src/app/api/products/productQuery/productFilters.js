@@ -9,3 +9,4 @@ export function applyFilters(query, params) {
 
   return query;
 }
+

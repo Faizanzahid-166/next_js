@@ -22,7 +22,7 @@ export async function PUT(req, { params }) {
   const body = await req.json();
 
   const { data, error } = await supabaseServer
-    .from("ecommerce_store_products")
+    .from("03_ecommerce_store_products")
     .update(body)
     .eq("id", id)
     .select()

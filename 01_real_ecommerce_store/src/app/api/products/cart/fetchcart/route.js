@@ -12,7 +12,7 @@ export async function GET(req) {
 
     // 2️⃣ Fetch user's cart
     const { data: cart, error: cartError } = await supabaseServer
-      .from("carts")
+      .from("03_carts")
       .select("id")
       .eq("user_id", userId)
       .maybeSingle();
@@ -24,12 +24,12 @@ export async function GET(req) {
 
     // 3️⃣ Fetch cart items with product join
     const { data: cartItems, error: itemsError } = await supabaseServer
-      .from("cart_items")
+      .from("03_cart_items")
       .select(`
         id,
         product_id,
         quantity,
-        ecommerce_store_products (
+        03_ecommerce_store_products (
           id,
           name,
           price,
@@ -44,9 +44,9 @@ export async function GET(req) {
 
     // 4️⃣ Normalize response
     const items = cartItems
-      .filter(item => item["ecommerce_store_products"]) // correct join alias
+      .filter(item => item["03_ecommerce_store_products"]) // correct join alias
       .map(item => {
-        const product = item["ecommerce_store_products"];
+        const product = item["03_ecommerce_store_products"];
         return {
           id: item.id,
           productId: item.product_id,
@@ -67,3 +67,4 @@ export async function GET(req) {
     return errorResponse("Failed to fetch cart", 500);
   }
 }
+

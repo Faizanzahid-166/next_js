@@ -12,7 +12,7 @@ export async function GET(req) {
     const params = Object.fromEntries(url.searchParams.entries());
 
     let query = supabaseServer
-      .from("ecommerce_store_products")
+      .from("03_ecommerce_store_products")
       .select("*", { count: "exact" });
 
     // 🔍 Search
@@ -57,3 +57,4 @@ export async function GET(req) {
     return errorResponse("Failed to load products", 500);
   }
 }
+

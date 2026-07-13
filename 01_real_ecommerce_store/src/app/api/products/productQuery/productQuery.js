@@ -12,3 +12,4 @@ export function applySearch(query, { q, product_no }) {
 
   return query;
 }
+

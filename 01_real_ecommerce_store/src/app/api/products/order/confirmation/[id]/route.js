@@ -1,13 +1,10 @@
-import Order from "@/models/Order.model";
+import { supabaseServer } from "@/lib/supabase";
 import { getUserFromCookies } from "@/lib/getUserFromRequest";
 import { successResponse, errorResponse } from "@/lib/response";
-import dbConnect from "@/lib/dbConnection";
 
 export async function POST(req, { params }) {
-  await dbConnect();
-
   try {
-    const { id } = params;
+    const { id } = await params;
     if (!id || typeof id !== "string") {
       return errorResponse("Order ID is required", 400);
     }
@@ -31,35 +28,46 @@ export async function POST(req, { params }) {
       return errorResponse("Invalid COD channel. Must be EASYPAISA or BANK.", 400);
     }
 
-    const order = await Order.findById(id);
-    if (!order) return errorResponse("Order not found", 404);
-    if (order.userId.toString() !== user._id.toString()) {
-      return errorResponse("Unauthorized", 401);
-    }
-    if (order.payment.status === "PAID") return errorResponse("Order is already paid", 400);
+    // Fetch the order from Supabase
+    const { data: order, error: fetchError } = await supabaseServer
+      .from("03_orders")
+      .select("id, user_id, payment_status")
+      .eq("id", id)
+      .single();
 
-    order.payment.method = "COD";
-    order.payment.channel = upperChannel;
-    order.payment.transactionId = transactionId;
-    order.payment.paidAt = new Date();
-    order.payment.proofImage = proofImage || order.payment.proofImage;
-    order.payment.status = "PENDING";
+    if (fetchError || !order) return errorResponse("Order not found", 404);
+    if (order.user_id !== user._id.toString()) return errorResponse("Unauthorized", 401);
+    if (order.payment_status === "PAID") return errorResponse("Order is already paid", 400);
 
-    await order.save();
+    // Update payment details
+    const { data: updated, error: updateError } = await supabaseServer
+      .from("03_orders")
+      .update({
+        payment_method: "COD",
+        payment_channel: upperChannel,
+        transaction_id: transactionId,
+        proof_image: proofImage || null,
+        payment_status: "PENDING",
+        paid_at: new Date().toISOString(),
+      })
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (updateError) return errorResponse(updateError.message, 500);
 
     const paymentData = {
-      method: order.payment.method,
-      channel: order.payment.channel || null,
-      status: order.payment.status,
-      transactionId: order.payment.transactionId,
-      paidAt: order.payment.paidAt,
-      gatewayData: order.payment.gatewayData || {},
-      proofImage: order.payment.proofImage || null,
+      method: updated.payment_method,
+      channel: updated.payment_channel || null,
+      status: updated.payment_status,
+      transactionId: updated.transaction_id,
+      paidAt: updated.paid_at,
+      proofImage: updated.proof_image || null,
     };
 
     return successResponse(
       "Payment information received. Admin will verify your order shortly.",
-      { orderId: order._id, payment: paymentData }
+      { orderId: updated.id, payment: paymentData }
     );
   } catch (err) {
     console.error("CONFIRM PAYMENT ERROR:", err);

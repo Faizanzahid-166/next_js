@@ -32,3 +32,4 @@ export async function GET(req) {
     return errorResponse(err.message || "Failed to fetch users", 500);
   }
 }
+

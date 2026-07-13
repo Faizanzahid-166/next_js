@@ -89,9 +89,10 @@ const adminOrdersSlice = createSlice({
       // update order status
       .addCase(updateOrderStatus.fulfilled, (state, action) => {
         const updated = action.payload;
-        const index = state.orders.findIndex((o) => o._id === updated._id);
+        const index = state.orders.findIndex((o) => o._id === updated._id || o.id === updated.id);
         if (index !== -1) {
-          state.orders[index] = updated;
+          // Preserve items/shippingAddress from existing order (status update doesn't return them)
+          state.orders[index] = { ...state.orders[index], ...updated };
         }
       })
       .addCase(updateOrderStatus.rejected, (state, action) => {

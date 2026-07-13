@@ -1,16 +1,13 @@
 // Admin-only: verify/update an order's payment status and order status
 import { getUserFromCookies } from "@/lib/getUserFromRequest";
 import { successResponse, errorResponse } from "@/lib/response";
-import connectDB from "@/lib/dbConnection";
-import Order from "@/models/Order.model";
+import { supabaseServer } from "@/lib/supabase";
 
 const PAYMENT_STATUSES = ["PENDING", "PAID", "FAILED"];
 const ORDER_STATUSES = ["PLACED", "PROCESSING", "SHIPPED", "DELIVERED", "CANCELLED"];
 
 export async function PATCH(req, { params }) {
   try {
-    await connectDB();
-
     const { id } = await params;
     if (!id) return errorResponse("Order ID is required", 400);
 
@@ -35,21 +32,57 @@ export async function PATCH(req, { params }) {
       return errorResponse("Invalid orderStatus", 400);
     }
 
-    const order = await Order.findById(id);
-    if (!order) return errorResponse("Order not found", 404);
+    // Verify order exists
+    const { data: existing, error: fetchError } = await supabaseServer
+      .from("03_orders")
+      .select("id")
+      .eq("id", id)
+      .single();
 
+    if (fetchError || !existing) return errorResponse("Order not found", 404);
+
+    // Build update payload
+    const updates = {};
     if (paymentStatus) {
-      order.payment.status = paymentStatus.toUpperCase();
-      if (paymentStatus.toUpperCase() === "PAID" && !order.payment.paidAt) {
-        order.payment.paidAt = new Date();
+      updates.payment_status = paymentStatus.toUpperCase();
+      if (paymentStatus.toUpperCase() === "PAID") {
+        updates.paid_at = new Date().toISOString();
       }
     }
-
     if (orderStatus) {
-      order.status = orderStatus.toUpperCase();
+      updates.status = orderStatus.toUpperCase();
     }
 
-    await order.save();
+    const { data: updated, error: updateError } = await supabaseServer
+      .from("03_orders")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (updateError) return errorResponse(updateError.message, 500);
+
+    // Return normalized order shape for Redux state update
+    const order = {
+      _id: updated.id,
+      id: updated.id,
+      user_id: updated.user_id,
+      status: updated.status,
+      createdAt: updated.created_at,
+      pricing: {
+        subTotal: updated.sub_total,
+        deliveryCharge: updated.delivery_charge,
+        totalAmount: updated.total_amount,
+      },
+      payment: {
+        method: updated.payment_method,
+        status: updated.payment_status,
+        channel: updated.payment_channel,
+        transactionId: updated.transaction_id,
+        proofImage: updated.proof_image,
+        paidAt: updated.paid_at,
+      },
+    };
 
     return successResponse("Order updated successfully", { order });
   } catch (err) {

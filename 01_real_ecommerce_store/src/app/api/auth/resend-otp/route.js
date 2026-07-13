@@ -32,3 +32,4 @@ export async function POST(req) {
     return errorResponse(err.message || "Resend OTP failed", 500);
   }
 }
+

@@ -14,6 +14,29 @@ CREATE TABLE "03_ecommerce_store_products" (
     product_no INT4 UNIQUE NOT NULL
 );
 
+-- Create Table: 03_orders
+CREATE TABLE "03_orders" (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id TEXT NOT NULL,
+    status TEXT NOT NULL DEFAULT 'PLACED',
+    total_amount NUMERIC NOT NULL,
+    sub_total NUMERIC NOT NULL DEFAULT 0,
+    delivery_charge NUMERIC NOT NULL DEFAULT 300,
+    payment_method TEXT NULL,
+    payment_status TEXT NOT NULL DEFAULT 'PENDING',
+    payment_channel TEXT NULL,
+    transaction_id TEXT NULL,
+    proof_image TEXT NULL,
+    paid_at TIMESTAMPTZ NULL,
+    shipping_full_name TEXT NULL,
+    shipping_phone TEXT NULL,
+    shipping_address TEXT NULL,
+    shipping_city TEXT NULL,
+    shipping_country TEXT NULL,
+    shipping_postal_code TEXT NULL,
+    created_at TIMESTAMPTZ NULL DEFAULT NOW()
+);
+
 -- Create Table: 03_carts
 CREATE TABLE "03_carts" (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -31,7 +54,19 @@ CREATE TABLE "03_cart_items" (
     created_at TIMESTAMPTZ NULL DEFAULT NOW()
 );
 
+-- Create Table: 03_order_items
+CREATE TABLE "03_order_items" (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    order_id UUID NULL REFERENCES "03_orders"(id) ON DELETE CASCADE,
+    product_id UUID NULL REFERENCES "03_ecommerce_store_products"(id) ON DELETE SET NULL,
+    quantity INT4 NOT NULL,
+    price_at_purchase NUMERIC NOT NULL,
+    created_at TIMESTAMPTZ NULL DEFAULT NOW()
+);
+
 -- Enable Row Level Security (RLS) for Supabase security
 ALTER TABLE "03_ecommerce_store_products" ENABLE ROW LEVEL SECURITY;
 ALTER TABLE "03_carts" ENABLE ROW LEVEL SECURITY;
 ALTER TABLE "03_cart_items" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "03_orders" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "03_order_items" ENABLE ROW LEVEL SECURITY;

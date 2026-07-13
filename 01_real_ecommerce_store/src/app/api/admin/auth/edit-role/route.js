@@ -52,3 +52,4 @@ export async function PATCH(req) {
     return errorResponse(err.message || "Failed to update role", 500);
   }
 }
+

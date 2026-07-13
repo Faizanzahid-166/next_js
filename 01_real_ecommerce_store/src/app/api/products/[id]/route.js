@@ -19,7 +19,7 @@ export async function GET(req, { params }) {
     }
 
     const { data, error } = await supabaseServer
-      .from("ecommerce_store_products")
+      .from("03_ecommerce_store_products")
       .select("*")
       .eq("id", id)
       .single();

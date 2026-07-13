@@ -23,3 +23,4 @@ export function sortByRelevance(items, searchTerm) {
     return 0; // keep original order if tie
   });
 }
+

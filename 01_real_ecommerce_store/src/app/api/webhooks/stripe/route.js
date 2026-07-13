@@ -33,7 +33,7 @@ export async function POST(req) {
     if (order) {
       // Clear cart after payment
       await supabaseServer
-        .from("cart_items")
+        .from("03_cart_items")
         .delete()
         .eq("user_id", order.userId.toString());
     }
@@ -41,3 +41,4 @@ export async function POST(req) {
 
   return new Response("OK", { status: 200 });
 }
+
