@@ -47,12 +47,11 @@ export default function DashboardLayout({ children }) {
   }
 
     const navLinks = [
-    { name: "Transaction History", path: "/" },
-    { name: "My Orders", path: "/" },
-    { name: "Add Payment method", path: "/" },
-    { name: "Career", path: "/" },
-    { name: "My Returns", path: "/" },
-  ];
+      { name: "Dashboard", path: "/customer/dashboard" },
+      { name: "Cart", path: "/customer/dashboard/cart" },
+      { name: "Checkout", path: "/customer/dashboard/orderPlace" },
+      { name: "Orders", path: "/customer/dashboard/orders" },
+    ];
 
   return (
     <div className="min-h-screen flex bg-gray-100">

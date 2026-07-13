@@ -25,7 +25,9 @@ export const loginUser = createAsyncThunk(
   "auth/loginUser",
   async (payload, thunkAPI) => {
     try {
-      const res = await axios.post("/api/auth/login", payload);
+      const res = await axios.post("/api/auth/login", payload, {
+        withCredentials: true,
+      });
       return res.data;
     } catch (err) {
       return thunkAPI.rejectWithValue(err.response?.data || err.message);
@@ -60,7 +62,9 @@ export const verifyOtp = createAsyncThunk(
   "auth/verifyOtp",
   async (payload, thunkAPI) => {
     try {
-      const res = await axios.post("/api/auth/verify-otp", payload);
+      const res = await axios.post("/api/auth/verify-otp", payload, {
+        withCredentials: true,
+      });
       return res.data;
     } catch (err) {
       return thunkAPI.rejectWithValue(err.response?.data || err.message);

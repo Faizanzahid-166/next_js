@@ -21,6 +21,7 @@ export async function POST(req) {
   try {
     const user = await User.findOne({ email }).select("+password");
     if (!user) return errorResponse("Invalid email or password", 401);
+    if (!user.emailVerified) return errorResponse("Email not verified. Please verify OTP before logging in.", 403);
 
     const match = await comparePassword(password, user.password);
     if (!match) return errorResponse("Invalid email or password", 401);

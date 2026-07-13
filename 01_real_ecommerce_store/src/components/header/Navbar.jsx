@@ -19,7 +19,7 @@ export default function Navbar() {
     { name: "Store", path: "/products" },
     { name: "About", path: "/about" },
     { name: "Profile", path: user?.role === "customer" ? "/customer/dashboard" : "/admin/dashboard"  },
-    { name: "Cart", path: "/cart" },
+    { name: "Cart", path: user?.role === "customer" ? "/customer/dashboard/cart" : "/admin/dashboard"  },
     { name: "Contact", path: "/contact" },
   ];
 

@@ -31,8 +31,8 @@ export default function AdminDashboardLayout({ children }) {
   const navLinks = [
     { name: "Inser Product", path: "/admin/dashboard/insertProduct" },
     { name: "List of User", path: "/admin/dashboard/adminUserRole" },
+    { name: "Orders / Transactions", path: "/admin/dashboard/orders" },
     { name: "Customer Support", path: "/admin/dashboard/" },
-    { name: "Order", path: "/admin/dashboard/" },
     { name: "Marketing Manager", path: "/admin/dashboard/" },
   ];
 

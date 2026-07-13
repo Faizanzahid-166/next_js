@@ -18,7 +18,7 @@ export async function GET(req) {
       .maybeSingle();
 
     if (cartError) return errorResponse(cartError.message, 500);
-    if (!cart) return successResponse("Cart is empty", []);
+    if (!cart) return successResponse("Cart is empty", { cartId: null, items: [] });
 
     const cartId = cart.id;
 
@@ -40,7 +40,7 @@ export async function GET(req) {
       .eq("cart_id", cartId);
 
     if (itemsError) return errorResponse(itemsError.message, 500);
-    if (!cartItems || cartItems.length === 0) return successResponse("Cart is empty", []);
+    if (!cartItems || cartItems.length === 0) return successResponse("Cart is empty", { cartId, items: [] });
 
     // 4️⃣ Normalize response
     const items = cartItems

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchUsers, editUserRole } from "@/redux/adminSliceTunk/adminUsersRoleSliceTunk";
+import Link from "next/link";
 
 export default function AdminUsersPage() {
   const dispatch = useDispatch();
@@ -60,6 +61,7 @@ export default function AdminUsersPage() {
                   <th className="px-4 py-3 text-left text-sm font-semibold">Name</th>
                   <th className="px-4 py-3 text-left text-sm font-semibold">Email</th>
                   <th className="px-4 py-3 text-left text-sm font-semibold">Role</th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold">Orders</th>
                   <th className="px-4 py-3 text-left text-sm font-semibold">Action</th>
                 </tr>
               </thead>
@@ -89,6 +91,15 @@ export default function AdminUsersPage() {
                             {user.isRoot ? "Root" : user.role}
                           </span>
                         )}
+                      </td>
+
+                      <td className="px-4 py-3">
+                        <Link
+                          href={`/admin/dashboard/orders?userId=${user._id}`}
+                          className="text-indigo-600 text-sm hover:underline"
+                        >
+                          View history
+                        </Link>
                       </td>
 
                       <td className="px-4 py-3 space-x-2">
