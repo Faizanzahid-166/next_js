@@ -42,6 +42,45 @@ export default function AdminProductsPage() {
   const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
 
+  const [uploading, setUploading] = useState(false);
+
+  const handleFileUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please upload an image file");
+      return;
+    }
+
+    setUploading(true);
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const response = await fetch("/api/admin/upload-image", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to upload image");
+      }
+
+      setForm((prev) => ({
+        ...prev,
+        image_url: data.url,
+      }));
+      toast.success("Image uploaded successfully! ✨");
+    } catch (err) {
+      console.error(err);
+      toast.error(err.message || "Error uploading image");
+    } finally {
+      setUploading(false);
+    }
+  };
+
   const startEdit = (product) => {
     setEditingProductId(product.id);
     setForm({ ...product });
@@ -132,8 +171,8 @@ const handleDelete = (id) => {
           <h2 className="font-semibold mb-2">
             {editingProductId ? "Edit Product" : "Add Product"}
           </h2>
-          <div className="flex flex-wrap gap-2 mb-2">
-            {["product_no", "name", "price", "category", "stock", "image_url"].map(
+          <div className="flex flex-wrap gap-2 mb-3">
+            {["product_no", "name", "price", "category", "stock"].map(
               (field) => (
                 <input
                   key={field}
@@ -142,18 +181,66 @@ const handleDelete = (id) => {
                   placeholder={field.replace("_", " ")}
                   value={form[field]}
                   onChange={handleChange}
-                  className="border p-1 rounded flex-1"
+                  className="border p-2 rounded flex-1 min-w-[150px]"
                 />
               )
             )}
           </div>
+
+          <div className="flex flex-col md:flex-row gap-4 items-center mb-3">
+            <div className="flex-1 w-full">
+              <input
+                type="text"
+                name="image_url"
+                placeholder="Image URL"
+                value={form.image_url}
+                onChange={handleChange}
+                className="border p-2 rounded w-full"
+              />
+            </div>
+            <div className="w-full md:w-auto flex items-center gap-3">
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleFileUpload}
+                className="hidden"
+                id="image-file-upload"
+                disabled={uploading}
+              />
+              <label
+                htmlFor="image-file-upload"
+                className={`px-4 py-2 border rounded-lg text-sm font-medium cursor-pointer transition bg-white hover:bg-gray-50 flex items-center gap-2 border-gray-300 ${
+                  uploading ? "opacity-50 cursor-not-allowed" : ""
+                }`}
+              >
+                {uploading ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                    <span className="text-gray-600">Uploading...</span>
+                  </>
+                ) : (
+                  <>
+                    <span className="text-gray-700">📁 Upload from Desktop</span>
+                  </>
+                )}
+              </label>
+              {form.image_url && (
+                <img
+                  src={form.image_url}
+                  alt="Preview"
+                  className="w-10 h-10 object-cover rounded border border-gray-200"
+                />
+              )}
+            </div>
+          </div>
+
           <input
             type="text"
             name="description"
             placeholder="Description"
             value={form.description}
             onChange={handleChange}
-            className="border p-1 rounded w-full mb-2"
+            className="border p-2 rounded w-full mb-3"
           />
           <div className="flex gap-2">
             <button

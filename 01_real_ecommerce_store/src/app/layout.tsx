@@ -1,5 +1,6 @@
 //"use client"; // <--- Add this if this layout will host client pages like verify-otp
 import type { Metadata } from "next";
+import { Playfair_Display, Inter } from "next/font/google";
 import "./globals.css";
 
 // redux store taunk
@@ -9,6 +10,19 @@ import Providers from "@/redux/Providers";
 // import components
 import Navbar from "@/components/header/Navbar";
 import Footer from "@/components/footer/Footer";
+import { Toaster } from "sonner";
+
+const playfair = Playfair_Display({
+  subsets: ["latin"],
+  variable: "--font-playfair",
+  display: "swap",
+});
+
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-geist-sans",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -21,8 +35,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html >
-      <body>
+    <html lang="en" className={`${playfair.variable} ${inter.variable}`}>
+      <body className="antialiased min-h-screen bg-background text-foreground font-sans">
 
         {/* redux store provider */}
         <Providers>
@@ -38,6 +52,7 @@ export default function RootLayout({
         {/* Footer (global) */}
         <Footer />
 
+        <Toaster position="top-right" richColors />
 
         </Providers>
       </body>

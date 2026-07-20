@@ -27,6 +27,14 @@ function AdminOrdersContent() {
   const { orders, loading, error } = useSelector((state) => state.adminOrders);
   const [paymentFilter, setPaymentFilter] = useState("");
   const [methodFilter, setMethodFilter] = useState("");
+  const [expandedOrders, setExpandedOrders] = useState({});
+
+  const toggleAddress = (orderId) => {
+    setExpandedOrders((prev) => ({
+      ...prev,
+      [orderId]: !prev[orderId],
+    }));
+  };
 
   useEffect(() => {
     dispatch(
@@ -103,12 +111,13 @@ function AdminOrdersContent() {
         <p className="text-center text-gray-500 py-10">No orders found.</p>
       )}
 
-      <div className="overflow-x-auto">
-        <table className="w-full border border-gray-200 rounded-lg text-sm">
+      <div className="overflow-x-auto border border-gray-200 rounded-lg shadow-sm">
+        <table className="min-w-[1100px] w-full text-sm">
           <thead className="bg-gray-50">
             <tr>
               <th className="px-3 py-3 text-left font-semibold">Order</th>
               <th className="px-3 py-3 text-left font-semibold">Customer</th>
+              <th className="px-3 py-3 text-left font-semibold">Shipping Address</th>
               <th className="px-3 py-3 text-left font-semibold">Items</th>
               <th className="px-3 py-3 text-left font-semibold">Total</th>
               <th className="px-3 py-3 text-left font-semibold">Payment</th>
@@ -134,6 +143,29 @@ function AdminOrdersContent() {
                     >
                       View history
                     </button>
+                  )}
+                </td>
+                <td className="px-3 py-3 text-xs max-w-[220px]">
+                  {order.shippingAddress ? (
+                    <div>
+                      <button
+                        onClick={() => toggleAddress(order._id || order.id)}
+                        className="text-xs text-indigo-600 font-semibold hover:underline flex items-center gap-1 cursor-pointer focus:outline-none"
+                      >
+                        {expandedOrders[order._id || order.id] ? "Hide Address ▴" : "Show Address ▾"}
+                      </button>
+                      
+                      {expandedOrders[order._id || order.id] && (
+                        <div className="mt-2 max-h-24 overflow-y-auto pr-1 text-gray-600 leading-tight border border-gray-100 rounded p-1.5 bg-gray-50/50">
+                          <p className="font-semibold text-gray-800">{order.shippingAddress.fullName}</p>
+                          <p className="text-gray-500 font-mono text-[10px] mt-0.5">{order.shippingAddress.phone}</p>
+                          <p className="mt-1 break-words">{order.shippingAddress.address}</p>
+                          <p className="font-medium mt-0.5">{order.shippingAddress.city}, {order.shippingAddress.country} {order.shippingAddress.postalCode}</p>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <span className="text-gray-400">—</span>
                   )}
                 </td>
                 <td className="px-3 py-3">
