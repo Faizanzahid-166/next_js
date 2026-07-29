@@ -70,3 +70,22 @@ ALTER TABLE "03_carts" ENABLE ROW LEVEL SECURITY;
 ALTER TABLE "03_cart_items" ENABLE ROW LEVEL SECURITY;
 ALTER TABLE "03_orders" ENABLE ROW LEVEL SECURITY;
 ALTER TABLE "03_order_items" ENABLE ROW LEVEL SECURITY;
+
+
+CREATE INDEX idx_orders_user
+ON "03_orders"(user_id);
+
+CREATE INDEX idx_orders_status
+ON "03_orders"(status);
+
+CREATE INDEX idx_orders_created
+ON "03_orders"(created_at DESC);
+
+CREATE INDEX idx_cart_user
+ON "03_carts"(user_id);
+
+CREATE INDEX idx_cart_items_cart
+ON "03_cart_items"(cart_id);
+
+CREATE INDEX idx_cart_items_product
+ON "03_cart_items"(product_id);
