@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
@@ -56,7 +57,15 @@ export default function ProductDetail({ productId }) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
       <div className="bg-gray-100 rounded-2xl p-6">
-        <img src={product.image_url} alt={product.name} className="w-full max-h-[450px] object-contain rounded-xl"/>
+        <div className="relative w-full h-[450px] rounded-xl overflow-hidden bg-white">
+          <Image
+            src={product.image_url}
+            alt={product.name}
+            fill
+            sizes="(min-width: 768px) 50vw, 100vw"
+            className="object-contain"
+          />
+        </div>
       </div>
       <div>
         <h1 className="text-3xl font-bold">{product.name}</h1>

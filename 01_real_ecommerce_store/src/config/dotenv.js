@@ -73,7 +73,9 @@ const config = {
 
   // URLs
   frontendUrl: process.env.FRONTEND_URL || 'http://localhost:3000',
-  nextPublicAppDomain: process.env.NEXT_PUBLIC_APP_DOMAIN || 'http://localhost:3000',
+  appDomain:
+    process.env.APP_DOMAIN ||
+    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000'),
 
   // Helpers
   isProduction: process.env.NODE_ENV === 'production',

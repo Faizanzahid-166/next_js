@@ -3,14 +3,18 @@ import VerificationEmail from "../../email/VerificationEmail";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
+const appDomain =
+  process.env.APP_DOMAIN ||
+  (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000");
+
 export async function sendVerificationEmail(email, name, verifyCode) {
-  if (!process.env.RESEND_API_KEY || !process.env.RESEND_FROM_EMAIL || !process.env.NEXT_PUBLIC_APP_DOMAIN) {
+  if (!process.env.RESEND_API_KEY || !process.env.RESEND_FROM_EMAIL || !appDomain) {
     console.error("Resend API key, FROM email, or app domain missing");
     return { success: false, message: "Email service not configured" };
   }
 
   try {
-    const verifyUrl = `${process.env.NEXT_PUBLIC_APP_DOMAIN}/verify-otp?email=${encodeURIComponent(email)}`;
+    const verifyUrl = `${appDomain}/verify-otp?email=${encodeURIComponent(email)}`;
 
     const result = await resend.emails.send({
       from: `Blitz Ecommerce <${process.env.RESEND_FROM_EMAIL}>`,

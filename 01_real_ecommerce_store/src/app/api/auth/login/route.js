@@ -1,7 +1,7 @@
 import dbConnect from "@/lib/dbConnection";
 import User from "@/models/User.model";
 import { comparePassword, signToken, getAuthCookieHeader } from "@/lib/auth";
-import { validateBody } from "@/lib/validate";
+import { rateLimit, rateLimitResponse } from "@/lib/rateLimit";
 import { z } from "zod";
 import { successResponse, errorResponse } from "@/lib/response";
 
@@ -11,12 +11,16 @@ const LoginSchema = z.object({
 });
 
 export async function POST(req) {
+  const body = await req.json();
+  const limit = rateLimit(req, `auth:login:${body?.email || "unknown"}`, 5, 60_000);
+  if (limit.limited) return rateLimitResponse(limit);
+
+  const parsed = LoginSchema.safeParse(body);
+  if (!parsed.success) return errorResponse(parsed.error.errors[0].message, 400);
+
+  const { email, password } = parsed.data;
+
   await dbConnect();
-
-  const { ok, data, error } = await validateBody(LoginSchema, req);
-  if (!ok) return errorResponse(error, 400);
-
-  const { email, password } = data;
 
   try {
     const user = await User.findOne({ email }).select("+password");

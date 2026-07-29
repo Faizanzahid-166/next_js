@@ -1,15 +1,19 @@
 import dbConnect from "@/lib/dbConnection";
 import User from "@/models/User.model";
 import { generateOTP } from "@/lib/auth";
+import { rateLimit, rateLimitResponse } from "@/lib/rateLimit";
 import { sendVerificationEmail } from "@/lib/resend"; // ✅ use correct export
 import { successResponse, errorResponse } from "@/lib/response";
 
 export async function POST(req) {
-  
   try {
+    const body = await req.json();
+    const limit = rateLimit(req, `auth:resend-otp:${body?.email || "unknown"}`, 3, 60_000);
+    if (limit.limited) return rateLimitResponse(limit);
+
     await dbConnect();
 
-    const { email } = await req.json();
+    const { email } = body;
     if (!email) return errorResponse("Email is required", 400);
 
     const user = await User.findOne({ email });

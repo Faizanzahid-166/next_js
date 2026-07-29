@@ -3,9 +3,13 @@
 import { supabaseServer } from "@/lib/supabase";
 import connectDB from "@/lib/dbConnection";
 import { getUserFromCookies } from "@/lib/getUserFromRequest";
+import { rateLimit, rateLimitResponse } from "@/lib/rateLimit";
 import { successResponse, errorResponse } from "@/lib/response";
 
 export async function POST(req) {
+  const limit = rateLimit(req, "admin:insert-product", 20, 60_000);
+  if (limit.limited) return rateLimitResponse(limit);
+
   await connectDB();
 
   const user = await getUserFromCookies(req);

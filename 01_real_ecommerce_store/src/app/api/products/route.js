@@ -1,11 +1,14 @@
+export const runtime = "edge";
+
 import { supabaseServer } from "@/lib/supabase";
-import { successResponse, errorResponse } from "@/lib/response";
+import { successResponse, errorResponse, cacheHeaders } from "@/lib/response";
 
 import { applySearch } from "./productQuery/productQuery";
 import { applyFilters } from "./productQuery/productFilters";
 import { applyPriceFilter } from "./productQuery/productPrice";
 import { applyPagination } from "./productQuery/productPagination";
-import { applyAnalytics } from "./productQuery/productAnalytics"
+import { applyAnalytics } from "./productQuery/productAnalytics";
+
 export async function GET(req) {
   try {
     const url = new URL(req.url);
@@ -46,13 +49,18 @@ export async function GET(req) {
       });
     }
 
-    return successResponse("Products list", {
-      items: sortedData,
-      total: count,
-      page,
-      limit,
-      totalPages: Math.ceil(count / limit),
-    });
+    return successResponse(
+      "Products list",
+      {
+        items: sortedData,
+        total: count,
+        page,
+        limit,
+        totalPages: Math.ceil(count / limit),
+      },
+      200,
+      cacheHeaders({ maxAge: 60, sMaxAge: 60, staleWhileRevalidate: 300 })
+    );
   } catch (err) {
     return errorResponse("Failed to load products", 500);
   }

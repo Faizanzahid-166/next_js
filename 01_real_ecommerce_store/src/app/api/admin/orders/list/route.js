@@ -1,10 +1,14 @@
 // Admin-only: list all orders (transaction history + per-user product history)
 import { getUserFromCookies } from "@/lib/getUserFromRequest";
+import { rateLimit, rateLimitResponse } from "@/lib/rateLimit";
 import { successResponse, errorResponse } from "@/lib/response";
 import { supabaseServer } from "@/lib/supabase";
 
 export async function GET(req) {
   try {
+    const limit = rateLimit(req, "admin:list-orders", 20, 60_000);
+    if (limit.limited) return rateLimitResponse(limit);
+
     const currentUser = await getUserFromCookies(req);
     if (!currentUser) return errorResponse("Unauthorized", 401);
 

@@ -1,7 +1,13 @@
+export const runtime = "edge";
+
 import { NextResponse } from "next/server";
 import { supabaseServer } from "@/lib/supabase";
+import { rateLimit, rateLimitResponse } from "@/lib/rateLimit";
 
 export async function POST(req) {
+  const limit = rateLimit(req, "admin:upload-image", 10, 60_000);
+  if (limit.limited) return rateLimitResponse(limit);
+
   try {
     const formData = await req.formData();
     const file = formData.get("file");
@@ -11,8 +17,7 @@ export async function POST(req) {
       return NextResponse.json({ error: "No file uploaded" }, { status: 400 });
     }
 
-    const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
+    const fileBuffer = await file.arrayBuffer();
 
     // Make sure bucket exists (or ignores error if it already does)
     try {
@@ -28,7 +33,7 @@ export async function POST(req) {
 
     const { error } = await supabaseServer.storage
       .from(bucketName)
-      .upload(filename, buffer, {
+      .upload(filename, fileBuffer, {
         contentType: file.type,
         upsert: true,
       });

@@ -1,11 +1,15 @@
 export const dynamic = "force-dynamic";
 import { getUserFromCookies } from "@/lib/getUserFromRequest";
+import { rateLimit, rateLimitResponse } from "@/lib/rateLimit";
 import { successResponse, errorResponse } from "@/lib/response";
 import connectDB from "@/lib/dbConnection";
 import User from "@/models/User.model";
 
 export async function PATCH(req) {
   try {
+    const limit = rateLimit(req, "admin:edit-role", 20, 60_000);
+    if (limit.limited) return rateLimitResponse(limit);
+
     await connectDB();
 
     // 🔐 Current logged-in user

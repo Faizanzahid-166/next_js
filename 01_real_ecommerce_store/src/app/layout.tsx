@@ -24,13 +24,39 @@ const inter = Inter({
   display: "swap",
 });
 
+const baseUrl =
+  process.env.APP_DOMAIN ||
+  (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000");
+
 export const metadata: Metadata = {
+  metadataBase: new URL(baseUrl),
   title: "Blitz Store – Premium Shopping, Delivered",
   description: "Shop the latest collection at Blitz Store. Fast delivery, EasyPaisa & COD payments accepted.",
   icons: {
     icon: "/favicon-icon.png",
     shortcut: "/favicon-icon.png",
     apple: "/favicon-icon.png",
+  },
+  openGraph: {
+    title: "Blitz Store – Premium Shopping, Delivered",
+    description: "Shop the latest collection at Blitz Store. Fast delivery, EasyPaisa & COD payments accepted.",
+    url: baseUrl,
+    siteName: "Blitz Store",
+    type: "website",
+    images: [
+      {
+        url: `${baseUrl}/og-image.png`,
+        width: 1200,
+        height: 630,
+        alt: "Blitz Store banner",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Blitz Store – Premium Shopping, Delivered",
+    description: "Shop the latest collection at Blitz Store. Fast delivery, EasyPaisa & COD payments accepted.",
+    images: [`${baseUrl}/og-image.png`],
   },
 };
 

@@ -1,7 +1,8 @@
 import dbConnect from "@/lib/dbConnection";
 import User from "@/models/User.model";
-import { hashPassword, generateOTP,  } from "@/lib/auth";
-import { sendVerificationEmail  } from "@/lib/resend";
+import { hashPassword, generateOTP } from "@/lib/auth";
+import { sendVerificationEmail } from "@/lib/resend";
+import { rateLimit, rateLimitResponse } from "@/lib/rateLimit";
 import { z } from "zod";
 import { successResponse, errorResponse } from "@/lib/response";
 
@@ -12,17 +13,19 @@ const SignupSchema = z.object({
   password: z.string().min(6, "Password must be at least 6 characters"),
 });
 
-
 export async function POST(req) {
   try {
-    await dbConnect();
-
     const body = await req.json();
+    const limit = rateLimit(req, `auth:signup:${body?.email || "unknown"}`, 5, 60_000);
+    if (limit.limited) return rateLimitResponse(limit);
+
     const parsed = SignupSchema.safeParse(body);
 
     if (!parsed.success) {
       return errorResponse(parsed.error.errors[0].message, 400);
     }
+
+    await dbConnect();
 
     const { name, email, password } = parsed.data;
 
@@ -46,7 +49,7 @@ export async function POST(req) {
 
     // Send OTP email
     try {
-      await sendVerificationEmail (email,name, otpObj.code);
+      await sendVerificationEmail(email, name, otpObj.code);
     } catch (err) {
       console.error("Failed to send OTP email:", err);
       return errorResponse("Failed to send OTP email", 500);
@@ -59,7 +62,7 @@ export async function POST(req) {
     );
   } catch (err) {
     console.error("Signup error:", err);
-    console.log(err)
+    console.log(err);
     return errorResponse(err.message || "Signup error", 500);
   }
 }

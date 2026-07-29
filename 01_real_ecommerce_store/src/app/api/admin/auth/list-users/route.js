@@ -1,10 +1,14 @@
 import { getUserFromCookies } from "@/lib/getUserFromRequest";
+import { rateLimit, rateLimitResponse } from "@/lib/rateLimit";
 import { successResponse, errorResponse } from "@/lib/response";
 import connectDB from "@/lib/dbConnection";
 import User from "@/models/User.model";
 
 export async function GET(req) {
   try {
+    const limit = rateLimit(req, "admin:list-users", 20, 60_000);
+    if (limit.limited) return rateLimitResponse(limit);
+
     // 🔗 Connect database
     await connectDB();
 

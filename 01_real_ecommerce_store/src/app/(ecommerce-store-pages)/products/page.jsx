@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useSelector, useDispatch } from "react-redux";
 import { setPage } from "@/redux/productsSliceTunk/productfetchSliceTunk";
 import Link from "next/link";
@@ -81,10 +82,12 @@ export default function Product() {
           >
             {/* Image Container with zoom */}
             <div className="relative w-full aspect-[4/3] bg-neutral-50 overflow-hidden">
-              <img
+              <Image
                 src={product.image_url}
                 alt={product.name}
-                className="w-full h-full object-cover transform group-hover:scale-103 transition-transform duration-500"
+                fill
+                sizes="(min-width: 1024px) 25vw, (min-width: 640px) 33vw, 100vw"
+                className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
               />
               <div className="absolute inset-0 bg-neutral-950/0 group-hover:bg-neutral-950/5 transition-colors pointer-events-none"></div>
             </div>

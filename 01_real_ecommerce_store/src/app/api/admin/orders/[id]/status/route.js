@@ -1,5 +1,6 @@
 // Admin-only: verify/update an order's payment status and order status
 import { getUserFromCookies } from "@/lib/getUserFromRequest";
+import { rateLimit, rateLimitResponse } from "@/lib/rateLimit";
 import { successResponse, errorResponse } from "@/lib/response";
 import { supabaseServer } from "@/lib/supabase";
 
@@ -8,6 +9,9 @@ const ORDER_STATUSES = ["PLACED", "PROCESSING", "SHIPPED", "DELIVERED", "CANCELL
 
 export async function PATCH(req, { params }) {
   try {
+    const limit = rateLimit(req, "admin:update-order-status", 20, 60_000);
+    if (limit.limited) return rateLimitResponse(limit);
+
     const { id } = await params;
     if (!id) return errorResponse("Order ID is required", 400);
 

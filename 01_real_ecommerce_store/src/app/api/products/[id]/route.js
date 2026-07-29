@@ -1,17 +1,13 @@
+export const runtime = "edge";
+
 // /api/products/[id]/route.js
 import { supabaseServer } from "@/lib/supabase";
-import { successResponse, errorResponse } from "@/lib/response";
+import { successResponse, errorResponse, cacheHeaders } from "@/lib/response";
 
 export async function GET(req, { params }) {
   try {
-    console.log("➡️ GET PRODUCT REQUEST");
-
-    // ✅ FIX: params is a Promise in Next 15
     const resolvedParams = await params;
-    console.log("📦 Resolved params:", resolvedParams);
-
     const { id } = resolvedParams;
-    console.log("🆔 Raw param id:", id, "type:", typeof id);
 
     if (!id || typeof id !== "string") {
       console.error("❌ Invalid product id");
@@ -24,14 +20,16 @@ export async function GET(req, { params }) {
       .eq("id", id)
       .single();
 
-    console.log("📦 Product data:", data);
-    console.log("⚠️ Supabase error:", error);
-
     if (error || !data) {
       return errorResponse("Product not found", 404);
     }
 
-    return successResponse("Product details", data);
+    return successResponse(
+      "Product details",
+      data,
+      200,
+      cacheHeaders({ maxAge: 60, sMaxAge: 60, staleWhileRevalidate: 300 })
+    );
   } catch (err) {
     console.error("🔥 GET PRODUCT ERROR:", err);
     return errorResponse("Failed to fetch product", 500);
