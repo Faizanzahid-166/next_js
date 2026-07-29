@@ -56,6 +56,7 @@ function CheckoutContent() {
     setUploadingProof(true);
     const formData = new FormData();
     formData.append("file", file);
+    formData.append("bucket", "03-ecommerce-COD-proof");
 
     try {
       const res = await fetch("/api/admin/upload-image", {
@@ -514,7 +515,7 @@ function CheckoutContent() {
                       <p className="text-[10px] text-neutral-400 mt-0.5">Qty {item.quantity}</p>
                     </div>
                   </div>
-                  <p className="text-xs font-semibold text-neutral-950">${(item.price * item.quantity).toFixed(2)}</p>
+                  <p className="text-xs font-semibold text-neutral-950">Rs. {(item.price * item.quantity)?.toLocaleString()}</p>
                 </div>
               ))}
             </div>
@@ -526,7 +527,7 @@ function CheckoutContent() {
           <div className="border-t border-border/40 pt-4 space-y-3 text-sm">
             <div className="flex justify-between text-neutral-500">
               <span>Subtotal</span>
-              <span className="font-semibold text-neutral-950">${totalPrice.toFixed(2)}</span>
+              <span className="font-semibold text-neutral-950">Rs. {totalPrice?.toLocaleString()}</span>
             </div>
             
             <div className="flex justify-between text-neutral-500">
@@ -545,7 +546,7 @@ function CheckoutContent() {
 
             <div className="flex justify-between text-base font-bold text-neutral-900 pt-1">
               <span>Total Amount</span>
-              <span>${totalPrice.toFixed(2)}</span>
+              <span>Rs. {totalPrice?.toLocaleString()}</span>
             </div>
           </div>
 

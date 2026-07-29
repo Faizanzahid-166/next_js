@@ -297,7 +297,7 @@ const handleDelete = (id) => {
                         <td className="px-4 py-3">{product.id}</td>
                         <td className="px-4 py-3">{product.product_no}</td>
                         <td className="px-4 py-3">{product.name}</td>
-                        <td className="px-4 py-3">{product.price}</td>
+                        <td className="px-4 py-3">Rs. {product.price}</td>
                         <td className="px-4 py-3">{product.category}</td>
                         <td className="px-4 py-3">{product.stock}</td>
                         <td className="px-4 py-3">{product.description}</td>

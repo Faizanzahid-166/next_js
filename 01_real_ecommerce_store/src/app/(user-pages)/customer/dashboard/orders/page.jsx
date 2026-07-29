@@ -145,7 +145,7 @@ export default function OrdersHistoryPage() {
                   </span>
 
                   <span className="font-bold text-neutral-950 text-sm ml-2">
-                    ${order.pricing?.totalAmount?.toFixed(2)}
+                    Rs. {order.pricing?.totalAmount?.toLocaleString()}
                   </span>
                   
                   <div className="text-neutral-400 ml-2 hidden sm:block">
@@ -178,10 +178,10 @@ export default function OrdersHistoryPage() {
                             )}
                             <div className="space-y-0.5">
                               <p className="font-semibold text-neutral-900">{item.name}</p>
-                              <p className="text-neutral-400">Qty {item.quantity} &middot; ${item.price.toFixed(2)}</p>
+                              <p className="text-neutral-400">Qty {item.quantity} &middot; Rs. {item.price?.toLocaleString()}</p>
                             </div>
                           </div>
-                          <span className="font-semibold text-neutral-950">${(item.price * item.quantity).toFixed(2)}</span>
+                          <span className="font-semibold text-neutral-950">Rs. {(item.price * item.quantity)?.toLocaleString()}</span>
                         </div>
                       ))}
                     </div>
@@ -216,10 +216,10 @@ export default function OrdersHistoryPage() {
                           <p>Transaction ID: <span className="font-mono text-neutral-900 font-medium">{order.payment.transactionId}</span></p>
                         )}
                         <div className="border-t border-neutral-100 my-1.5"></div>
-                        <p className="flex justify-between"><span>Subtotal:</span> <span className="font-semibold text-neutral-850">${order.pricing?.subTotal?.toFixed(2)}</span></p>
-                        <p className="flex justify-between"><span>Delivery Charge:</span> <span className="font-semibold text-neutral-850">${order.pricing?.deliveryCharge?.toFixed(2)}</span></p>
+                        <p className="flex justify-between"><span>Subtotal:</span> <span className="font-semibold text-neutral-850">Rs. {order.pricing?.subTotal?.toLocaleString()}</span></p>
+                        <p className="flex justify-between"><span>Delivery Charge:</span> <span className="font-semibold text-neutral-850">Rs. {order.pricing?.deliveryCharge?.toLocaleString()}</span></p>
                         <p className="flex justify-between border-t border-neutral-100 pt-1 text-sm font-bold text-neutral-950">
-                          <span>Total Paid:</span> <span>${order.pricing?.totalAmount?.toFixed(2)}</span>
+                          <span>Total Paid:</span> <span>Rs. {order.pricing?.totalAmount?.toLocaleString()}</span>
                         </p>
                       </div>
                     </div>

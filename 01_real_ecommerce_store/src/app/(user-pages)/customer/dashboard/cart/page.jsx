@@ -174,7 +174,7 @@ export default function CartPage() {
                   </div>
                   <div>
                     <h3 className="font-semibold text-neutral-900 text-sm">{item.name}</h3>
-                    <p className="text-xs text-neutral-400 mt-0.5">Price: ${item.price.toFixed(2)}</p>
+                    <p className="text-xs text-neutral-400 mt-0.5">Price: Rs. {item.price?.toLocaleString()}</p>
                   </div>
                 </div>
 
@@ -205,7 +205,7 @@ export default function CartPage() {
 
                   {/* Subtotal */}
                   <p className="font-semibold text-neutral-900 text-sm sm:min-w-[70px] text-right">
-                    ${(item.price * item.quantity).toFixed(2)}
+                    Rs. {(item.price * item.quantity)?.toLocaleString()}
                   </p>
                 </div>
               </div>
@@ -240,7 +240,7 @@ export default function CartPage() {
           <div className="space-y-3.5 text-sm">
             <div className="flex justify-between text-neutral-500">
               <span>Subtotal</span>
-              <span className="font-semibold text-neutral-900">${totalPrice.toFixed(2)}</span>
+              <span className="font-semibold text-neutral-900">Rs. {totalPrice?.toLocaleString()}</span>
             </div>
             
             <div className="flex justify-between text-neutral-500">
@@ -252,7 +252,7 @@ export default function CartPage() {
 
             <div className="flex justify-between text-base font-bold text-neutral-900 pt-1">
               <span>Total</span>
-              <span>${totalPrice.toFixed(2)}</span>
+              <span>Rs. {totalPrice?.toLocaleString()}</span>
             </div>
           </div>
 

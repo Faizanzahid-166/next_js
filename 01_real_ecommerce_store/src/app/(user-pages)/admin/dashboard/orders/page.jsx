@@ -176,7 +176,7 @@ function AdminOrdersContent() {
                   ))}
                 </td>
                 <td className="px-3 py-3 font-semibold">
-                  ${order.pricing?.totalAmount?.toFixed(2)}
+                  Rs. {order.pricing?.totalAmount?.toLocaleString()}
                 </td>
                 <td className="px-3 py-3">
                   <p className="text-xs mb-1">

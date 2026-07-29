@@ -150,7 +150,7 @@ export default function CustomerDashboardHome() {
             </div>
           </div>
           <p className="text-2xl font-bold font-serif text-neutral-900 mt-2">
-            ${lifetimeSpent.toLocaleString()}
+            Rs. {lifetimeSpent.toLocaleString()}
           </p>
           <p className="text-xs text-emerald-600 mt-2 font-medium">Verified transactions</p>
         </div>
@@ -233,7 +233,7 @@ export default function CustomerDashboardHome() {
                         <span>•</span>
                         <span>{itemCount} {itemCount === 1 ? "item" : "items"}</span>
                         <span>•</span>
-                        <span className="font-semibold text-neutral-800">${Number(order.totalPrice || order.amount || 0).toLocaleString()}</span>
+                        <span className="font-semibold text-neutral-800">Rs. {Number(order.totalPrice || order.amount || 0).toLocaleString()}</span>
                       </p>
                     </div>
 
@@ -274,7 +274,7 @@ export default function CustomerDashboardHome() {
               </div>
               <div className="flex items-center justify-between text-xs">
                 <span className="text-neutral-500">Currency</span>
-                <span className="font-medium text-neutral-900">USD ($) / PKR</span>
+                <span className="font-medium text-neutral-900">PKR (Rs.)</span>
               </div>
               <div className="flex items-center justify-between text-xs">
                 <span className="text-neutral-500">Member Status</span>

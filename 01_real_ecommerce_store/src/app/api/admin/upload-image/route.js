@@ -5,6 +5,7 @@ export async function POST(req) {
   try {
     const formData = await req.formData();
     const file = formData.get("file");
+    const bucketName = formData.get("bucket") || "03-ecommerce-images";
 
     if (!file) {
       return NextResponse.json({ error: "No file uploaded" }, { status: 400 });
@@ -15,7 +16,7 @@ export async function POST(req) {
 
     // Make sure bucket exists (or ignores error if it already does)
     try {
-      await supabaseServer.storage.createBucket("03-ecommerce-images", {
+      await supabaseServer.storage.createBucket(bucketName, {
         public: true,
       });
     } catch (e) {
@@ -25,8 +26,8 @@ export async function POST(req) {
     // Generate unique name
     const filename = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, "_")}`;
 
-    const { data, error } = await supabaseServer.storage
-      .from("03-ecommerce-images")
+    const { error } = await supabaseServer.storage
+      .from(bucketName)
       .upload(filename, buffer, {
         contentType: file.type,
         upsert: true,
@@ -39,12 +40,13 @@ export async function POST(req) {
 
     // Get public URL
     const { data: publicUrlData } = supabaseServer.storage
-      .from("03-ecommerce-images")
+      .from(bucketName)
       .getPublicUrl(filename);
 
     return NextResponse.json({
       success: true,
       url: publicUrlData.publicUrl,
+      bucket: bucketName,
     });
   } catch (error) {
     console.error("Upload image catch block error:", error);

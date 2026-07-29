@@ -98,7 +98,7 @@ export default function Product() {
                 {product.name}
               </h3>
               <p className="text-sm font-semibold text-primary/95 pt-1">
-                ${product.price.toFixed(2)}
+                Rs. {product.price?.toLocaleString()}
               </p>
             </div>
           </Link>

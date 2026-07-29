@@ -118,7 +118,7 @@ export default function AdminDashboardPage() {
             </div>
           </div>
           <p className="text-2xl font-bold font-serif text-neutral-900 mt-2">
-            ${totalRevenue.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+            Rs. {totalRevenue.toLocaleString(undefined, { minimumFractionDigits: 2 })}
           </p>
           <div className="flex items-center gap-1 mt-2 text-xs text-emerald-600 font-medium">
             <TrendingUp className="w-3.5 h-3.5" />
@@ -289,7 +289,7 @@ export default function AdminDashboardPage() {
 
                     <div className="flex items-center gap-4 self-start sm:self-center">
                       <span className="text-sm font-bold font-serif text-neutral-900">
-                        ${Number(order.totalPrice || order.amount || 0).toLocaleString()}
+                        Rs. {Number(order.totalPrice || order.amount || 0).toLocaleString()}
                       </span>
                       <Link
                         href={`/admin/dashboard/orders?userId=${order.userId || ""}`}

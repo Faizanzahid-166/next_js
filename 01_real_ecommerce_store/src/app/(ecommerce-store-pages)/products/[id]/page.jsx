@@ -156,7 +156,7 @@ export default function ProductPage() {
           </h1>
 
           <p className="text-2xl font-semibold text-primary mt-3">
-            ${product.price.toFixed(2)}
+            Rs. {product.price?.toLocaleString()}
           </p>
 
           {/* Description Block */}
@@ -198,7 +198,7 @@ export default function ProductPage() {
             <div className="bg-secondary/30 rounded-xl p-4 border border-border/20 text-xs text-neutral-500 space-y-2.5">
               <div className="flex items-center gap-2">
                 <span className="text-green-600">✓</span>
-                <span>Free shipping on all orders over $50</span>
+                <span>Free shipping on all orders over Rs. 3,000</span>
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-green-600">✓</span>
