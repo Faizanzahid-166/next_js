@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import { placeOrder, resetOrderState } from "@/redux/paymentSliceTunk/orderPlace/orderPlaceSliceTunk";
 import { confirmPayment, resetPaymentState } from "@/redux/paymentSliceTunk/orderConfirmation/orderConfirmationSliceTunk";
 import { fetchCart } from "@/redux/productsSliceTunk/cartSliceTunk";
-import { Check, CreditCard, Shield, Truck, AlertCircle } from "lucide-react";
+import { Check, CreditCard, Shield, AlertCircle, UploadCloud, X, Loader2 } from "lucide-react";
 
 const emptyAddress = {
   fullName: "",
@@ -42,6 +42,51 @@ function CheckoutContent() {
   const [codPaymentInfo, setCodPaymentInfo] = useState(null);
   const [transactionId, setTransactionId] = useState("");
   const [proofImage, setProofImage] = useState("");
+  const [uploadingProof, setUploadingProof] = useState(false);
+
+  const handleScreenshotUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please select a valid image file (PNG, JPG, WEBP)");
+      return;
+    }
+
+    setUploadingProof(true);
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const res = await fetch("/api/admin/upload-image", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await res.json();
+      if (res.ok && data.url) {
+        setProofImage(data.url);
+        toast.success("EasyPaisa receipt screenshot uploaded successfully! ✨");
+      } else {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setProofImage(reader.result);
+          toast.success("EasyPaisa receipt screenshot uploaded! ✨");
+        };
+        reader.readAsDataURL(file);
+      }
+    } catch (err) {
+      console.error("Upload error:", err);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setProofImage(reader.result);
+        toast.success("EasyPaisa receipt screenshot loaded! ✨");
+      };
+      reader.readAsDataURL(file);
+    } finally {
+      setUploadingProof(false);
+    }
+  };
 
   // Reset redux slices on mount
   useEffect(() => {
@@ -239,17 +284,68 @@ function CheckoutContent() {
                   />
                 </div>
 
-                <div className="space-y-1.5">
-                  <label className="block text-xs font-semibold text-neutral-500 uppercase tracking-wider">
-                    Screenshot URL (optional)
+                <div className="space-y-2">
+                  <label className="block text-xs font-semibold text-neutral-600 uppercase tracking-wider">
+                    EasyPaisa Receipt Screenshot (.PNG / .JPG)
                   </label>
-                  <input
-                    type="text"
-                    value={proofImage}
-                    onChange={(e) => setProofImage(e.target.value)}
-                    placeholder="Paste your image upload URL here"
-                    className="w-full border border-border p-2.5 rounded focus:outline-none focus:border-neutral-500 text-sm"
-                  />
+
+                  {proofImage ? (
+                    <div className="relative p-3 bg-emerald-50/70 border border-emerald-200 rounded-xl flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <img
+                          src={proofImage}
+                          alt="EasyPaisa Receipt Preview"
+                          className="w-14 h-14 object-cover rounded-lg border border-emerald-300 shadow-xs"
+                        />
+                        <div className="min-w-0">
+                          <p className="text-xs font-bold text-emerald-950 flex items-center gap-1">
+                            <Check className="w-3.5 h-3.5 text-emerald-600" /> Screenshot Attached
+                          </p>
+                          <p className="text-[11px] text-emerald-700 truncate">Ready for admin verification</p>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setProofImage("")}
+                        className="p-1.5 rounded-lg bg-white border border-emerald-200 text-emerald-700 hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200 transition-colors text-xs flex items-center gap-1 font-medium"
+                      >
+                        <X className="w-4 h-4" />
+                        <span className="hidden sm:inline">Remove</span>
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="relative border-2 border-dashed border-neutral-300 hover:border-emerald-500 rounded-xl p-5 text-center transition-all bg-neutral-50/60 hover:bg-emerald-50/20 group cursor-pointer">
+                      <input
+                        type="file"
+                        accept="image/png, image/jpeg, image/jpg, image/webp"
+                        onChange={handleScreenshotUpload}
+                        disabled={uploadingProof}
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                      />
+                      <div className="flex flex-col items-center justify-center space-y-2">
+                        {uploadingProof ? (
+                          <>
+                            <Loader2 className="w-7 h-7 text-emerald-600 animate-spin" />
+                            <p className="text-xs font-semibold text-neutral-700">Uploading receipt screenshot...</p>
+                          </>
+                        ) : (
+                          <>
+                            <div className="p-2.5 rounded-full bg-white shadow-xs border border-neutral-200 text-emerald-600 group-hover:scale-110 transition-transform">
+                              <UploadCloud className="w-5 h-5" />
+                            </div>
+                            <div>
+                              <p className="text-xs font-bold text-neutral-900">
+                                Click or drag PNG screenshot here
+                              </p>
+                              <p className="text-[11px] text-neutral-500 mt-0.5">
+                                EasyPaisa payment receipt PNG, JPG or WEBP
+                              </p>
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 <button
