@@ -8,6 +8,7 @@ import axios from "axios";
 import Link from "next/link";
 import { toast } from "sonner";
 import { addToCart, fetchCart } from "@/redux/productsSliceTunk/cartSliceTunk";
+import ImageGallery from "@/components/product/ImageGallery";
 
 export default function ProductDetail({ productId }) {
   const router = useRouter();
@@ -57,14 +58,8 @@ export default function ProductDetail({ productId }) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
       <div className="bg-gray-100 rounded-2xl p-6">
-        <div className="relative w-full h-[450px] rounded-xl overflow-hidden bg-white">
-          <Image
-            src={product.image_url}
-            alt={product.name}
-            fill
-            sizes="(min-width: 768px) 50vw, 100vw"
-            className="object-contain"
-          />
+        <div>
+          <ImageGallery images={product.images || product.image_urls || [product.image_url]} autoPlay={false} />
         </div>
       </div>
       <div>

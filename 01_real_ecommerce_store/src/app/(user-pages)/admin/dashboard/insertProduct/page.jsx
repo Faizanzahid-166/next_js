@@ -32,6 +32,7 @@ export default function AdminProductsPage() {
     stock: "",
     description: "",
     image_url: "",
+    images: [],
   });
 
   // Fetch products on page load or page/limit change
@@ -45,40 +46,52 @@ export default function AdminProductsPage() {
   const [uploading, setUploading] = useState(false);
 
   const handleFileUpload = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
+    const files = Array.from(e.target.files || []);
+    if (!files.length) return;
 
-    if (!file.type.startsWith("image/")) {
-      toast.error("Please upload an image file");
+    const invalid = files.find((f) => !f.type.startsWith("image/"));
+    if (invalid) {
+      toast.error("Please upload only image files");
       return;
     }
 
     setUploading(true);
-    const formData = new FormData();
-    formData.append("file", file);
 
     try {
-      const response = await fetch("/api/admin/upload-image", {
-        method: "POST",
-        body: formData,
-      });
+      for (const file of files) {
+        const formData = new FormData();
+        formData.append("file", file);
 
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.error || "Failed to upload image");
+        const response = await fetch("/api/admin/upload-image", {
+          method: "POST",
+          body: formData,
+        });
+        const data = await response.json();
+
+        if (!response.ok) throw new Error(data.error || "Failed to upload image");
+
+        setForm((prev) => ({
+          ...prev,
+          images: [...(prev.images || []), data.url],
+        }));
       }
 
-      setForm((prev) => ({
-        ...prev,
-        image_url: data.url,
-      }));
-      toast.success("Image uploaded successfully! ✨");
+      toast.success("Image(s) uploaded successfully! ✨");
     } catch (err) {
       console.error(err);
       toast.error(err.message || "Error uploading image");
     } finally {
       setUploading(false);
     }
+  };
+
+  const handleAddImageUrl = () => {
+    if (!form.image_url) return toast.error("Enter an image URL to add");
+    setForm((prev) => ({ ...prev, images: [...(prev.images || []), prev.image_url], image_url: "" }));
+  };
+
+  const removeImageAt = (i) => {
+    setForm((prev) => ({ ...prev, images: prev.images.filter((_, idx) => idx !== i) }));
   };
 
   const startEdit = (product) => {
@@ -187,16 +200,20 @@ const handleDelete = (id) => {
             )}
           </div>
 
-          <div className="flex flex-col md:flex-row gap-4 items-center mb-3">
+          <div className="flex flex-col md:flex-row gap-4 items-start mb-3">
             <div className="flex-1 w-full">
-              <input
-                type="text"
-                name="image_url"
-                placeholder="Image URL"
-                value={form.image_url}
-                onChange={handleChange}
-                className="border p-2 rounded w-full"
-              />
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  name="image_url"
+                  placeholder="Image URL (paste then click Add)"
+                  value={form.image_url}
+                  onChange={handleChange}
+                  className="border p-2 rounded w-full"
+                />
+                <button onClick={handleAddImageUrl} className="px-3 py-2 bg-gray-200 rounded">Add</button>
+              </div>
+              <div className="mt-2 text-sm text-neutral-600">Or upload one or more images from your desktop:</div>
             </div>
             <div className="w-full md:w-auto flex items-center gap-3">
               <input
@@ -205,6 +222,7 @@ const handleDelete = (id) => {
                 onChange={handleFileUpload}
                 className="hidden"
                 id="image-file-upload"
+                multiple
                 disabled={uploading}
               />
               <label
@@ -220,19 +238,23 @@ const handleDelete = (id) => {
                   </>
                 ) : (
                   <>
-                    <span className="text-gray-700">📁 Upload from Desktop</span>
+                    <span className="text-gray-700">📁 Upload images</span>
                   </>
                 )}
               </label>
-              {form.image_url && (
-                <img
-                  src={form.image_url}
-                  alt="Preview"
-                  className="w-10 h-10 object-cover rounded border border-gray-200"
-                />
-              )}
             </div>
           </div>
+
+          {form.images && form.images.length > 0 && (
+            <div className="mb-3 flex flex-wrap gap-2">
+              {form.images.map((src, i) => (
+                <div key={i} className="relative w-20 h-20 rounded overflow-hidden border">
+                  <img src={src} alt={`img-${i}`} className="w-full h-full object-cover" />
+                  <button onClick={() => removeImageAt(i)} className="absolute top-1 right-1 bg-black/60 text-white text-xs px-1 rounded">×</button>
+                </div>
+              ))}
+            </div>
+          )}
 
           <input
             type="text"
@@ -302,12 +324,10 @@ const handleDelete = (id) => {
                         <td className="px-4 py-3">{product.stock}</td>
                         <td className="px-4 py-3">{product.description}</td>
                         <td className="px-4 py-3">
-                          {product.image_url ? (
-                            <img
-                              src={product.image_url}
-                              alt={product.name}
-                              className="w-16 h-16 object-cover rounded"
-                            />
+                          {product.images && product.images.length ? (
+                            <img src={product.images[0]} alt={product.name} className="w-16 h-16 object-cover rounded" />
+                          ) : product.image_url ? (
+                            <img src={product.image_url} alt={product.name} className="w-16 h-16 object-cover rounded" />
                           ) : (
                             "No Image"
                           )}

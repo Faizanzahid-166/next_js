@@ -25,6 +25,7 @@ export async function POST(req) {
     stock,
     description,
     image_url,
+    images,
   } = await req.json();
 
   if (!name || price == null) {
@@ -42,6 +43,7 @@ export async function POST(req) {
         stock,
         description,
         image_url,
+        images: images || (image_url ? [image_url] : []),
       },
     ])
     .select()
