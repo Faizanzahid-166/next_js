@@ -32,20 +32,37 @@ export async function POST(req) {
     return errorResponse("Name and price are required", 400);
   }
 
+  // Normalize images list into a JSON string if multiple images are provided
+  let imageList = [];
+  if (Array.isArray(images) && images.length > 0) {
+    imageList = images.filter((img) => typeof img === "string" && img.trim() !== "");
+  } else if (image_url && typeof image_url === "string") {
+    imageList = [image_url.trim()];
+  }
+
+  const finalImageUrl = imageList.length > 1 ? JSON.stringify(imageList) : (imageList[0] || null);
+
+  let parsedProductNo = parseInt(product_no, 10);
+  if (isNaN(parsedProductNo) || !parsedProductNo) {
+    parsedProductNo = Math.floor(Date.now() / 1000) % 2147483647;
+  }
+
+  const parsedPrice = Number(price);
+  const parsedStock = parseInt(stock, 10) || 0;
+
+  const insertData = {
+    product_no: parsedProductNo,
+    name,
+    category: category || null,
+    price: parsedPrice,
+    stock: parsedStock,
+    description: description || null,
+    image_url: finalImageUrl,
+  };
+
   const { data, error } = await supabaseServer
     .from("03_ecommerce_store_products")
-    .insert([
-      {
-        product_no,
-        name,
-        category,
-        price,
-        stock,
-        description,
-        image_url,
-        images: images || (image_url ? [image_url] : []),
-      },
-    ])
+    .insert([insertData])
     .select()
     .single();
 

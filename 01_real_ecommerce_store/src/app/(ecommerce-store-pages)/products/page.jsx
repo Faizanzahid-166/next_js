@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useSelector, useDispatch } from "react-redux";
+import { getPrimaryImageUrl } from "@/lib/productImages";
 import { setPage } from "@/redux/productsSliceTunk/productfetchSliceTunk";
 import Link from "next/link";
 import { ChevronLeft, ChevronRight, SlidersHorizontal } from "lucide-react";
@@ -23,7 +24,7 @@ export default function Product() {
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
           {Array.from({ length: 8 }).map((_, index) => (
             <div key={index} className="border border-border/40 rounded-xl overflow-hidden bg-white p-4 space-y-4 animate-pulse">
-              <div className="w-full aspect-[4/3] bg-neutral-200 rounded-lg"></div>
+              <div className="w-fit aspect-[4/3] bg-neutral-200 rounded-lg"></div>
               <div className="h-4 bg-neutral-200 rounded w-3/4"></div>
               <div className="h-4 bg-neutral-200 rounded w-1/4"></div>
             </div>
@@ -56,7 +57,7 @@ export default function Product() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 font-sans">
-      
+
       {/* Top action bar */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between border-b border-border/40 pb-6 mb-8 gap-4">
         <div>
@@ -80,18 +81,18 @@ export default function Product() {
             href={`/products/${product.id}`}
             className="group block border border-border/40 rounded-xl overflow-hidden bg-white hover:shadow-md transition-shadow duration-300"
           >
-            {/* Image Container with zoom */}
-            <div className="relative w-full aspect-[4/3] bg-neutral-50 overflow-hidden">
+            {/* Image Container: Full outfit view with padding */}
+            <div className="relative w-full aspect-[3/4] bg-neutral-50/90 overflow-hidden flex items-center justify-center p-2">
               <Image
-                src={product.image_url}
+                src={getPrimaryImageUrl(product)}
                 alt={product.name}
                 fill
                 sizes="(min-width: 1024px) 25vw, (min-width: 640px) 33vw, 100vw"
-                className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+                className="object-contain p-4 sm:p-5 transition-transform duration-500 group-hover:scale-[1.05]"
               />
               <div className="absolute inset-0 bg-neutral-950/0 group-hover:bg-neutral-950/5 transition-colors pointer-events-none"></div>
             </div>
-            
+
             {/* Product Meta */}
             <div className="p-5 space-y-1">
               <span className="text-[10px] uppercase tracking-wider text-neutral-400 font-semibold block">
@@ -120,11 +121,11 @@ export default function Product() {
             <ChevronLeft className="w-4 h-4" />
             <span>Previous</span>
           </button>
-          
+
           <span className="text-sm font-medium text-neutral-500">
             {page} / {totalPages}
           </span>
-          
+
           <button
             disabled={page >= totalPages}
             onClick={() => dispatch(setPage(page + 1))}

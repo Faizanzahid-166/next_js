@@ -13,6 +13,7 @@ import {
   editProduct,
   deleteProduct,
 } from "@/redux/adminSliceTunk/adminProductRoleSliceTunk";
+import { getProductImages, getPrimaryImageUrl } from "@/lib/productImages";
 import NavbarProduct from "./NavbarProduct";
 import { toast } from "sonner";
 
@@ -96,7 +97,12 @@ export default function AdminProductsPage() {
 
   const startEdit = (product) => {
     setEditingProductId(product.id);
-    setForm({ ...product });
+    const parsedImages = getProductImages(product);
+    setForm({
+      ...product,
+      images: parsedImages,
+      image_url: "",
+    });
   };
 
   const cancelEdit = () => {
@@ -113,57 +119,63 @@ export default function AdminProductsPage() {
     dispatch(clearSelectedProduct());
   };
 
-  // inside saveProduct
-const saveProduct = () => {
-  if (!form.name || !form.price || !form.category) {
-    toast.error("Name, Price, and Category are required!");
-    return;
-  }
+  const saveProduct = () => {
+    if (!form.name || !form.price || !form.category) {
+      toast.error("Name, Price, and Category are required!");
+      return;
+    }
 
-  if (editingProductId) {
-    dispatch(editProduct({ id: editingProductId, productData: form }))
-      .then(() => {
-        cancelEdit();
-        dispatch(fetchProducts({ page, limit }));
-        toast.success("Product updated successfully!");
-      })
-      .catch(() => {
-        toast.error("Failed to update product.");
-      });
-  } else {
-    dispatch(insertProduct({ productData: form }))
-      .then(() => {
-        setForm({
-          product_no: "",
-          name: "",
-          price: "",
-          category: "",
-          stock: "",
-          description: "",
-          image_url: "",
+    if (editingProductId) {
+      dispatch(editProduct({ id: editingProductId, productData: form }))
+        .unwrap()
+        .then(() => {
+          cancelEdit();
+          dispatch(fetchProducts({ page, limit }));
+          toast.success("Product updated successfully!");
+        })
+        .catch((err) => {
+          const errorMsg = typeof err === "string" ? err : err?.message || err?.error || "Failed to update product.";
+          toast.error(errorMsg);
         });
-        dispatch(fetchProducts({ page, limit }));
-        toast.success("Product added successfully!");
-      })
-      .catch(() => {
-        toast.error("Failed to add product.");
-      });
-  }
-};
+    } else {
+      dispatch(insertProduct({ productData: form }))
+        .unwrap()
+        .then(() => {
+          setForm({
+            product_no: "",
+            name: "",
+            price: "",
+            category: "",
+            stock: "",
+            description: "",
+            image_url: "",
+            images: [],
+          });
+          dispatch(fetchProducts({ page, limit }));
+          toast.success("Product added successfully!");
+        })
+        .catch((err) => {
+          const errorMsg = typeof err === "string" ? err : err?.message || err?.error || "Failed to add product.";
+          toast.error(errorMsg);
+        });
+    }
+  };
 
-// inside handleDelete
-const handleDelete = (id) => {
-  if (window.confirm("Are you sure?")) {
-    dispatch(deleteProduct({ id }))
-      .then(() => {
-        dispatch(fetchProducts({ page, limit }));
-        toast.success("Product deleted successfully!");
-      })
-      .catch(() => {
-        toast.error("Failed to delete product.");
-      });
-  }
-};
+  // inside handleDelete
+  const handleDelete = (id) => {
+    if (window.confirm("Are you sure?")) {
+      dispatch(deleteProduct({ id }))
+        .unwrap()
+        .then(() => {
+          dispatch(fetchProducts({ page, limit }));
+          toast.success("Product deleted successfully!");
+        })
+        .catch((err) => {
+          const errorMsg = typeof err === "string" ? err : err?.message || err?.error || "Failed to delete product.";
+          toast.error(errorMsg);
+        });
+    }
+  };
   return (
     <div className="min-h-screen p-6 bg-gray-100">
       <div className="max-w-7xl mx-auto bg-white shadow-lg rounded-xl p-6">
@@ -324,13 +336,24 @@ const handleDelete = (id) => {
                         <td className="px-4 py-3">{product.stock}</td>
                         <td className="px-4 py-3">{product.description}</td>
                         <td className="px-4 py-3">
-                          {product.images && product.images.length ? (
-                            <img src={product.images[0]} alt={product.name} className="w-16 h-16 object-cover rounded" />
-                          ) : product.image_url ? (
-                            <img src={product.image_url} alt={product.name} className="w-16 h-16 object-cover rounded" />
-                          ) : (
-                            "No Image"
-                          )}
+                          {(() => {
+                            const productImgs = getProductImages(product);
+                            const primaryImg = productImgs[0];
+                            return (
+                              <div className="flex items-center gap-2">
+                                <img
+                                  src={primaryImg}
+                                  alt={product.name}
+                                  className="w-14 h-14 object-cover rounded border"
+                                />
+                                {productImgs.length > 1 && (
+                                  <span className="text-xs bg-blue-100 text-blue-800 font-semibold px-2 py-0.5 rounded-full">
+                                    +{productImgs.length - 1}
+                                  </span>
+                                )}
+                              </div>
+                            );
+                          })()}
                         </td>
                         <td className="px-4 py-3 flex gap-2">
                           {!isEditing && (

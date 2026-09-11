@@ -46,14 +46,14 @@ export default function NavbarProduct() {
 
 
   return (
-    <div className="flex flex-col md:flex-row gap-4 p-4 bg-white shadow-md rounded-md">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 p-4 bg-white shadow-md rounded-md">
       {/* Name/Description Search */}
       <input
         type="text"
         placeholder="Search by name/description..."
         value={search}
         onChange={(e) => dispatch(setSearch(e.target.value))}
-        className="border border-gray-300 rounded-md px-3 py-2 flex-1 focus:outline-none focus:ring-2 focus:ring-blue-400"
+        className="border border-gray-300 rounded-md px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-400 sm:col-span-2 lg:col-span-1"
       />
 
       {/* Product No Search */}
@@ -62,14 +62,14 @@ export default function NavbarProduct() {
         placeholder="Search by Product No..."
         value={product_no || ""}
         onChange={(e) => dispatch(setProductNo(e.target.value))}
-        className="border border-gray-300 rounded-md px-3 py-2 flex-1 focus:outline-none focus:ring-2 focus:ring-blue-400"
+        className="border border-gray-300 rounded-md px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-400"
       />
 
       {/* Category */}
       <select
         value={category}
         onChange={(e) => dispatch(setCategory(e.target.value))}
-        className="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+        className="border border-gray-300 rounded-md px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-400"
       >
         <option value="">All</option>
         {categories.map((cat) => (
@@ -80,18 +80,19 @@ export default function NavbarProduct() {
       </select>
 
       {/* Price */}
-<input
-  type="number"
-  placeholder="Enter price (50, 80, 120...)"
-  value={price || ""}
-  onChange={(e) => dispatch(setPrice(e.target.value))}
-  className="border px-3 py-2 rounded w-40"
-/>
+      <input
+        type="number"
+        placeholder="Enter price (50, 80, 120...)"
+        value={price || ""}
+        onChange={(e) => dispatch(setPrice(e.target.value))}
+        className="border border-gray-300 rounded-md px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-400"
+      />
+
       {/* Analytics */}
       <select
         value={analytics}
         onChange={(e) => dispatch(setAnalytics(e.target.value))}
-        className="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+        className="border border-gray-300 rounded-md px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-400"
       >
         <option value="">None</option>
         <option value="best_sellers">Best Sellers</option>

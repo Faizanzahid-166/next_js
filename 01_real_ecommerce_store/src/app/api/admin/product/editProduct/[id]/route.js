@@ -25,9 +25,24 @@ export async function PUT(req, { params }) {
 
   const body = await req.json();
 
+  const updateData = {};
+  if (body.name !== undefined) updateData.name = body.name;
+  if (body.category !== undefined) updateData.category = body.category;
+  if (body.price !== undefined && body.price !== "") updateData.price = Number(body.price);
+  if (body.stock !== undefined && body.stock !== "") updateData.stock = parseInt(body.stock, 10) || 0;
+  if (body.description !== undefined) updateData.description = body.description;
+  if (body.product_no !== undefined && body.product_no !== "") updateData.product_no = parseInt(body.product_no, 10);
+  
+  if (Array.isArray(body.images)) {
+    const valid = body.images.filter((img) => typeof img === "string" && img.trim() !== "");
+    updateData.image_url = valid.length > 1 ? JSON.stringify(valid) : (valid[0] || null);
+  } else if (body.image_url !== undefined && body.image_url) {
+    updateData.image_url = body.image_url;
+  }
+
   const { data, error } = await supabaseServer
     .from("03_ecommerce_store_products")
-    .update(body)
+    .update(updateData)
     .eq("id", id)
     .select()
     .single();

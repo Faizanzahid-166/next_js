@@ -7,6 +7,8 @@ import { toast } from "sonner";
 import Link from "next/link";
 import { ChevronLeft, ShoppingBag, ShieldCheck, HelpCircle } from "lucide-react";
 
+import ImageGallery from "@/components/product/ImageGallery";
+import { getProductImages } from "@/lib/productImages";
 import { addCartItem, fetchCart } from "@/redux/productsSliceTunk/cartSliceTunk";
 import { fetchProductById, clearSelectedProduct } from "@/redux/productsSliceTunk/productfetchSliceTunk";
 
@@ -135,14 +137,9 @@ export default function ProductPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-16">
         
-        {/* LEFT COLUMN: Image Card */}
-        <div className="bg-neutral-50 rounded-2xl overflow-hidden border border-border/40 p-8 flex items-center justify-center aspect-[4/3] relative">
-          <img
-            src={product.image_url}
-            alt={product.name}
-            className="max-h-[400px] object-contain rounded-xl transform hover:scale-102 transition-transform duration-500"
-          />
-          <div className="absolute inset-0 bg-neutral-950/2 pointer-events-none"></div>
+        {/* LEFT COLUMN: Interactive Product Image Slider */}
+        <div className="w-full">
+          <ImageGallery images={getProductImages(product)} />
         </div>
 
         {/* RIGHT COLUMN: Details */}

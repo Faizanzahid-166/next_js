@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { getPrimaryImageUrl } from "@/lib/productImages";
 import {
   fetchCart,
   addCartItem,
@@ -166,7 +167,7 @@ export default function CartPage() {
                 <div className="flex items-center gap-5">
                   <div className="w-20 h-20 bg-neutral-50 border border-border/40 rounded-lg overflow-hidden flex items-center justify-center flex-shrink-0 relative">
                     <img
-                      src={item.image_url}
+                      src={getPrimaryImageUrl(item)}
                       alt={item.name}
                       className="w-full h-full object-cover"
                     />
