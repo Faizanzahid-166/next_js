@@ -8,6 +8,7 @@ import Link from "next/link";
 import { toast } from "sonner";
 import { addCartItem, fetchCart } from "@/redux/productsSliceTunk/cartSliceTunk";
 import { addGuestCartItem, hydrateGuestCart } from "@/redux/productsSliceTunk/guestCartSlice";
+import { getPrimaryImageUrl } from "@/lib/productImages";
 import ImageGallery from "@/components/product/ImageGallery";
 
 export default function ProductDetail({ productId }) {
@@ -61,7 +62,7 @@ export default function ProductDetail({ productId }) {
           productId: product.id || product._id,
           name: product.name,
           price: product.price,
-          image_url: product.image_url || product.images?.[0] || "",
+          image_url: getPrimaryImageUrl(product),
           stock: product.stock,
           quantity: 1,
         })

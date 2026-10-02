@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { supabase } from "@/lib/supabase";
+import { supabaseServer } from "@/lib/supabase";
 
 export async function GET(request) {
     try {
@@ -14,7 +14,7 @@ export async function GET(request) {
         }
 
         // 2. Lightweight Supabase request
-        const { error } = await supabase
+        const { error } = await supabaseServer
             .from("03_ecommerce_store_products")
             .select("id")
             .limit(1);

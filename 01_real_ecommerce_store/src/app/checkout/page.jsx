@@ -16,6 +16,7 @@ import {
 } from "@/redux/paymentSliceTunk/orderConfirmation/orderConfirmationSliceTunk";
 import { fetchCart } from "@/redux/productsSliceTunk/cartSliceTunk";
 import { hydrateGuestCart, clearGuestCart } from "@/redux/productsSliceTunk/guestCartSlice";
+import { getPrimaryImageUrl } from "@/lib/productImages";
 
 import {
   Check,
@@ -678,7 +679,7 @@ export default function CheckoutPage() {
                   <div className="flex items-center gap-3">
                     <div className="w-12 h-12 bg-white border border-border/40 rounded overflow-hidden flex items-center justify-center flex-shrink-0 relative">
                       <img
-                        src={item.image_url}
+                        src={getPrimaryImageUrl(item)}
                         alt={item.name}
                         className="w-full h-full object-cover"
                       />

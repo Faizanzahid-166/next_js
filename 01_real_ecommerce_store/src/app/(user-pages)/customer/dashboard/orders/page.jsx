@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchMyOrders } from "@/redux/paymentSliceTunk/orderHistory/orderHistorySliceTunk";
+import { getPrimaryImageUrl } from "@/lib/productImages";
 import Link from "next/link";
 import { ShoppingBag, ChevronDown, ChevronUp, Calendar, Box, Receipt } from "lucide-react";
 
@@ -169,13 +170,11 @@ export default function OrdersHistoryPage() {
                           className="flex items-center justify-between text-xs p-3 hover:bg-neutral-50/50"
                         >
                           <div className="flex items-center gap-3">
-                            {item.image_url && (
-                              <img
-                                src={item.image_url}
-                                alt={item.name}
-                                className="w-9 h-9 object-cover rounded border border-border/30"
-                              />
-                            )}
+                            <img
+                              src={getPrimaryImageUrl(item)}
+                              alt={item.name}
+                              className="w-9 h-9 object-cover rounded border border-border/30"
+                            />
                             <div className="space-y-0.5">
                               <p className="font-semibold text-neutral-900">{item.name}</p>
                               <p className="text-neutral-400">Qty {item.quantity} &middot; Rs. {item.price?.toLocaleString()}</p>

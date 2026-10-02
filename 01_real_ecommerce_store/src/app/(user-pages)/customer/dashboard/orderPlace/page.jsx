@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { placeOrder, resetOrderState } from "@/redux/paymentSliceTunk/orderPlace/orderPlaceSliceTunk";
 import { confirmPayment, resetPaymentState } from "@/redux/paymentSliceTunk/orderConfirmation/orderConfirmationSliceTunk";
 import { fetchCart } from "@/redux/productsSliceTunk/cartSliceTunk";
+import { getPrimaryImageUrl } from "@/lib/productImages";
 import { Check, CreditCard, Shield, AlertCircle, UploadCloud, X, Loader2 } from "lucide-react";
 
 const emptyAddress = {
@@ -500,7 +501,7 @@ function CheckoutContent() {
                 <div key={item.productId} className="flex items-center justify-between py-3 gap-3">
                   <div className="flex items-center gap-3">
                     <div className="w-12 h-12 bg-white border border-border/40 rounded overflow-hidden flex items-center justify-center flex-shrink-0 relative">
-                      <img src={item.image_url} alt={item.name} className="w-full h-full object-cover" />
+                      <img src={getPrimaryImageUrl(item)} alt={item.name} className="w-full h-full object-cover" />
                       <div className="absolute inset-0 bg-neutral-950/2"></div>
                     </div>
                     <div>

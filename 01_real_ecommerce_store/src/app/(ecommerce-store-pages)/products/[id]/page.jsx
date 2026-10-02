@@ -8,7 +8,7 @@ import Link from "next/link";
 import { ChevronLeft, ShoppingBag, ShieldCheck, HelpCircle } from "lucide-react";
 
 import ImageGallery from "@/components/product/ImageGallery";
-import { getProductImages } from "@/lib/productImages";
+import { getProductImages, getPrimaryImageUrl } from "@/lib/productImages";
 import { addCartItem, fetchCart } from "@/redux/productsSliceTunk/cartSliceTunk";
 import { addGuestCartItem, hydrateGuestCart } from "@/redux/productsSliceTunk/guestCartSlice";
 import { fetchProductById, clearSelectedProduct } from "@/redux/productsSliceTunk/productfetchSliceTunk";
@@ -76,7 +76,7 @@ export default function ProductPage() {
           productId: product.id,
           name: product.name,
           price: product.price,
-          image_url: product.image_url || product.images?.[0] || "",
+          image_url: getPrimaryImageUrl(product),
           stock: product.stock,
           quantity: 1,
         })
