@@ -133,16 +133,29 @@ function AdminOrdersContent() {
                   {(order._id || order.id).slice(-12).toUpperCase()}
                 </td>
                 <td className="px-3 py-3">
-                  <p className="font-medium text-xs text-gray-700 break-all">{order.user_id || "Unknown"}</p>
-                  {!userIdParam && order.user_id && (
-                    <button
-                      onClick={() =>
-                        router.push(`/admin/dashboard/orders?userId=${order.user_id}`)
-                      }
-                      className="text-indigo-600 text-xs hover:underline mt-1"
-                    >
-                      View history
-                    </button>
+                  {order.is_guest || !order.user_id ? (
+                    <div>
+                      <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-semibold bg-amber-100 text-amber-800">
+                        Guest Order
+                      </span>
+                      <p className="font-medium text-xs text-gray-800 mt-1">
+                        {order.guest_name || order.shippingAddress?.fullName || "Guest Customer"}
+                      </p>
+                    </div>
+                  ) : (
+                    <div>
+                      <p className="font-medium text-xs text-gray-700 break-all">{order.user_id}</p>
+                      {!userIdParam && order.user_id && (
+                        <button
+                          onClick={() =>
+                            router.push(`/admin/dashboard/orders?userId=${order.user_id}`)
+                          }
+                          className="text-indigo-600 text-xs hover:underline mt-1"
+                        >
+                          View history
+                        </button>
+                      )}
+                    </div>
                   )}
                 </td>
                 <td className="px-3 py-3 text-xs max-w-[220px]">

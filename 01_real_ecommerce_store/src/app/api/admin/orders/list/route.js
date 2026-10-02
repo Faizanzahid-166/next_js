@@ -28,6 +28,12 @@ export async function GET(req) {
       .select(`
         id,
         user_id,
+        is_guest,
+        guest_name,
+        guest_phone,
+        guest_address,
+        guest_city,
+        guest_country,
         status,
         total_amount,
         sub_total,

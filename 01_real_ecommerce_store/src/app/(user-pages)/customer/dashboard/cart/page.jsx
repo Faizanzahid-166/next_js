@@ -22,7 +22,8 @@ export default function CartPage() {
     if (user) dispatch(fetchCart());
   }, [user, dispatch]);
 
-  // Redirect to login if not logged in
+  // The dashboard cart requires authentication (protected by middleware).
+  // If somehow reached without a user, redirect to the public checkout/guest cart.
   if (!user) {
     return (
       <div className="max-w-md mx-auto py-24 px-4 text-center space-y-6">
@@ -32,15 +33,23 @@ export default function CartPage() {
         <div className="space-y-2">
           <h2 className="text-2xl font-serif font-bold text-neutral-900">Your Cart</h2>
           <p className="text-sm text-neutral-500">
-            Please log in to view your shopping cart and complete your purchase.
+            Please log in to view your account cart, or continue shopping as a guest.
           </p>
         </div>
-        <Link
-          href="/login?redirect=/customer/dashboard/cart"
-          className="inline-block w-full px-6 py-3 bg-primary text-primary-foreground font-semibold rounded-md text-sm hover:bg-primary/95 transition-colors"
-        >
-          Sign In to Your Account
-        </Link>
+        <div className="flex flex-col gap-3">
+          <Link
+            href="/checkout"
+            className="inline-block w-full px-6 py-3 bg-primary text-primary-foreground font-semibold rounded-md text-sm hover:bg-primary/95 transition-colors"
+          >
+            Continue as Guest
+          </Link>
+          <Link
+            href="/login?redirect=/customer/dashboard/cart"
+            className="inline-block w-full px-6 py-3 border border-border text-neutral-800 font-semibold rounded-md text-sm hover:bg-neutral-50 transition-colors"
+          >
+            Sign In to Your Account
+          </Link>
+        </div>
       </div>
     );
   }

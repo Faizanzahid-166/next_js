@@ -8,6 +8,7 @@ import adminOrdersReducer from './adminSliceTunk/adminOrdersSliceTunk'
 
 import productReducer from "./productsSliceTunk/productfetchSliceTunk";
 import cartReducer from "./productsSliceTunk/cartSliceTunk";
+import guestCartReducer from "./productsSliceTunk/guestCartSlice";
 
 import paymentReducer from "./paymentSliceTunk/orderPlace/orderPlaceSliceTunk";
 import orderConfirmationReducer from "./paymentSliceTunk/orderConfirmation/orderConfirmationSliceTunk";
@@ -20,19 +21,17 @@ export const store = configureStore({
 
     //  admin tunk
     adminUsers: adminUserRoleReducer,
-    adminproduct:adminproductRoleReducer,
+    adminproduct: adminproductRoleReducer,
     adminOrders: adminOrdersReducer,
 
     // product tunk
-     products: productReducer,
-     cart: cartReducer,
+    products: productReducer,
+    cart: cartReducer,
+    guestCart: guestCartReducer,
 
-     // payment tunk
-      payment: paymentReducer,
-      orderConfirmation: orderConfirmationReducer,
-      orderHistory: orderHistoryReducer,
-
-
-
+    // payment tunk
+    payment: paymentReducer,
+    orderConfirmation: orderConfirmationReducer,
+    orderHistory: orderHistoryReducer,
   },
 });

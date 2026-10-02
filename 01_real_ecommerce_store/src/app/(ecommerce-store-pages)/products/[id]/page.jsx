@@ -10,6 +10,7 @@ import { ChevronLeft, ShoppingBag, ShieldCheck, HelpCircle } from "lucide-react"
 import ImageGallery from "@/components/product/ImageGallery";
 import { getProductImages } from "@/lib/productImages";
 import { addCartItem, fetchCart } from "@/redux/productsSliceTunk/cartSliceTunk";
+import { addGuestCartItem, hydrateGuestCart } from "@/redux/productsSliceTunk/guestCartSlice";
 import { fetchProductById, clearSelectedProduct } from "@/redux/productsSliceTunk/productfetchSliceTunk";
 
 export default function ProductPage() {
@@ -22,6 +23,11 @@ export default function ProductPage() {
   const { selectedProduct: product, productLoading, productError } = useSelector(
     (state) => state.products
   );
+
+  // Hydrate guest cart from localStorage
+  useEffect(() => {
+    dispatch(hydrateGuestCart());
+  }, [dispatch]);
 
   // Fetch product details
   useEffect(() => {
@@ -45,25 +51,37 @@ export default function ProductPage() {
   }, [user, dispatch]);
 
   const handleAddToCart = async () => {
-    if (!user?._id) {
-      toast.error("Login to add items");
-      router.push(`/login?redirect=/products/${productId}`);
-      return;
-    }
+    if (!product) return;
 
-    if (product?.stock <= 0) {
+    if (product.stock <= 0) {
       toast.error("Product out of stock");
       return;
     }
 
-    try {
-      console.log("Adding product to cart:", product.id);
-      await dispatch(addCartItem({ productId: product.id, quantity: 1 })).unwrap();
-      toast.success("Product added to cart");
-      dispatch(fetchCart()); // Refresh cart after adding
-    } catch (err) {
-      console.error("Add to cart error:", err);
-      toast.error(err || "Failed to add product");
+    if (user?._id) {
+      // Authenticated user: add to database cart
+      try {
+        console.log("Adding product to user cart:", product.id);
+        await dispatch(addCartItem({ productId: product.id, quantity: 1 })).unwrap();
+        toast.success("Product added to cart!");
+        dispatch(fetchCart()); // Refresh cart after adding
+      } catch (err) {
+        console.error("Add to cart error:", err);
+        toast.error(err || "Failed to add product");
+      }
+    } else {
+      // Guest user: add to local Redux/localStorage guest cart
+      dispatch(
+        addGuestCartItem({
+          productId: product.id,
+          name: product.name,
+          price: product.price,
+          image_url: product.image_url || product.images?.[0] || "",
+          stock: product.stock,
+          quantity: 1,
+        })
+      );
+      toast.success("Added to cart!");
     }
   };
 

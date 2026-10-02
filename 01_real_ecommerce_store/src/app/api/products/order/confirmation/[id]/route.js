@@ -9,8 +9,8 @@ export async function POST(req, { params }) {
       return errorResponse("Order ID is required", 400);
     }
 
+    // Auth is optional for this endpoint — guest orders are allowed
     const user = await getUserFromCookies(req);
-    if (!user) return errorResponse("Unauthorized", 401);
 
     const { paymentMethod, channel, transactionId, proofImage } = await req.json();
     if (!paymentMethod || !transactionId) {
@@ -31,12 +31,21 @@ export async function POST(req, { params }) {
     // Fetch the order from Supabase
     const { data: order, error: fetchError } = await supabaseServer
       .from("03_orders")
-      .select("id, user_id, payment_status")
+      .select("id, user_id, is_guest, payment_status")
       .eq("id", id)
       .single();
 
     if (fetchError || !order) return errorResponse("Order not found", 404);
-    if (order.user_id !== user._id.toString()) return errorResponse("Unauthorized", 401);
+
+    // Authorization check:
+    // - For authenticated orders: the requesting user must own the order
+    // - For guest orders (is_guest = true, user_id = null): allow without user check
+    //   (the orderId itself acts as a secret since it's a UUID)
+    if (!order.is_guest) {
+      if (!user) return errorResponse("Unauthorized", 401);
+      if (order.user_id !== user._id.toString()) return errorResponse("Unauthorized", 401);
+    }
+
     if (order.payment_status === "PAID") return errorResponse("Order is already paid", 400);
 
     // Update payment details

@@ -5,26 +5,37 @@ import { useDispatch, useSelector } from "react-redux";
 import { useEffect } from "react";
 import { logoutUser, fetchUser } from "@/redux/authSliceTunk/authSlice";
 import { fetchCart } from "@/redux/productsSliceTunk/cartSliceTunk";
+import { hydrateGuestCart } from "@/redux/productsSliceTunk/guestCartSlice";
 import MobileMenu from "./MobileMenu";
 import { ShoppingBag, User } from "lucide-react";
 
 export default function Navbar() {
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.auth);
-  const { items } = useSelector((state) => state.cart || { items: [] });
+  const { items: dbItems } = useSelector((state) => state.cart || { items: [] });
+  const { items: guestItems } = useSelector((state) => state.guestCart || { items: [] });
 
   useEffect(() => {
     dispatch(fetchUser());
+    dispatch(hydrateGuestCart()); // restore guest cart from localStorage on every page load
   }, [dispatch]);
 
-  // Fetch cart when user mounts or logs in
+  // Fetch DB cart when user is authenticated customer
   useEffect(() => {
     if (user && user.role === "customer") {
       dispatch(fetchCart());
     }
   }, [user, dispatch]);
 
-  const cartCount = items?.reduce((sum, item) => sum + item.quantity, 0) || 0;
+  // Cart count: use DB cart for authenticated, guest cart for unauthenticated
+  const cartItems = user && user.role === "customer" ? dbItems : guestItems;
+  const cartCount = cartItems?.reduce((sum, item) => sum + item.quantity, 0) || 0;
+
+  // Cart link: authenticated customers go to dashboard cart, guests go to /checkout
+  const cartHref =
+    user && user.role === "customer"
+      ? "/customer/dashboard/cart"
+      : "/checkout";
 
   const navLinks = [
     { name: "Home", path: "/" },
@@ -38,7 +49,6 @@ export default function Navbar() {
       method: "POST",
       credentials: "include",
     });
-
     dispatch(logoutUser());
     window.location.href = "/";
   };
@@ -66,12 +76,12 @@ export default function Navbar() {
           ))}
         </ul>
 
-        {/* RIGHT: AUTH & CART */}
+        {/* RIGHT: CART + AUTH */}
         <div className="hidden md:flex items-center gap-5">
-          {/* Cart Icon Link for Customers */}
-          {user && user.role === "customer" && (
+          {/* Cart Icon — visible for all users (guests & authenticated customers) */}
+          {(!user || user.role === "customer") && (
             <Link
-              href="/customer/dashboard/cart"
+              href={cartHref}
               className="relative p-2 text-muted-foreground hover:text-foreground transition-colors duration-200"
               aria-label="Shopping Cart"
             >
@@ -92,7 +102,9 @@ export default function Navbar() {
               >
                 <User className="w-3.5 h-3.5 text-muted-foreground" />
                 <span>{user.name}</span>
-                <span className="text-[10px] uppercase tracking-wider text-muted-foreground ml-0.5">({user.role})</span>
+                <span className="text-[10px] uppercase tracking-wider text-muted-foreground ml-0.5">
+                  ({user.role})
+                </span>
               </Link>
 
               <button
@@ -126,8 +138,15 @@ export default function Navbar() {
           handleLogout={handleLogout}
           navLinks={[
             ...navLinks,
-            { name: "Profile", path: user?.role === "customer" ? "/customer/dashboard" : "/admin/dashboard" },
-            { name: "Cart", path: user?.role === "customer" ? "/customer/dashboard/cart" : "/admin/dashboard" }
+            {
+              name: "Profile",
+              path:
+                user?.role === "customer" ? "/customer/dashboard" : "/admin/dashboard",
+            },
+            {
+              name: "Cart",
+              path: cartHref,
+            },
           ]}
           cartCount={cartCount}
         />
