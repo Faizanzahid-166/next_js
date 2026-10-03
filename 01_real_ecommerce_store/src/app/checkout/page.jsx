@@ -14,7 +14,7 @@ import {
   confirmPayment,
   resetPaymentState,
 } from "@/redux/paymentSliceTunk/orderConfirmation/orderConfirmationSliceTunk";
-import { fetchCart } from "@/redux/productsSliceTunk/cartSliceTunk";
+import { fetchCart, clearCart } from "@/redux/productsSliceTunk/cartSliceTunk";
 import { hydrateGuestCart, clearGuestCart } from "@/redux/productsSliceTunk/guestCartSlice";
 import { getPrimaryImageUrl } from "@/lib/productImages";
 
@@ -29,6 +29,7 @@ import {
   UserCircle2,
   LogIn,
   UserPlus,
+  Trash2,
 } from "lucide-react";
 
 // ---------------------------------------------------------------------------
@@ -268,6 +269,22 @@ export default function CheckoutPage() {
         },
       })
     );
+  };
+
+  const handleClearCart = async () => {
+    if (window.confirm("Are you sure you want to clear your cart?")) {
+      if (isAuthenticated) {
+        try {
+          await dispatch(clearCart()).unwrap();
+          toast.success("Cart cleared successfully");
+        } catch (err) {
+          toast.error(err?.toString() || "Failed to clear cart");
+        }
+      } else {
+        dispatch(clearGuestCart());
+        toast.success("Cart cleared successfully");
+      }
+    }
   };
 
   // ── Loading / empty guard ─────────────────────────────────────────────────
@@ -664,9 +681,23 @@ export default function CheckoutPage() {
 
         {/* ── RIGHT: Order Summary ── */}
         <div className="lg:col-span-5 bg-neutral-50 border border-border/40 rounded-xl p-6 space-y-6 shadow-sm">
-          <h2 className="text-lg font-serif font-bold text-neutral-900 border-b border-border/40 pb-3">
-            Order Summary
-          </h2>
+          <div className="flex items-center justify-between border-b border-border/40 pb-3">
+            <h2 className="text-lg font-serif font-bold text-neutral-900">
+              Order Summary
+            </h2>
+            {cartItems && cartItems.length > 0 && !activeOrderId && (
+              <button
+                type="button"
+                onClick={handleClearCart}
+                id="clear-cart-btn"
+                className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors border border-red-200/60 cursor-pointer"
+                title="Clear all items from cart"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                <span>Clear Cart</span>
+              </button>
+            )}
+          </div>
 
           {/* Cart items */}
           {cartItems && cartItems.length > 0 ? (
