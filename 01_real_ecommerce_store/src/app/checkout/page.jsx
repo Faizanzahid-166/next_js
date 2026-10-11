@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
@@ -84,6 +84,8 @@ export default function CheckoutPage() {
   const [proofImage, setProofImage] = useState("");
   const [uploadingProof, setUploadingProof] = useState(false);
   const [lastOrderedItems, setLastOrderedItems] = useState([]);
+  const [hydrated, setHydrated] = useState(false);
+  const orderHandledRef = useRef(null);
 
   // Determine which cart to use
   const isAuthenticated = !!user;
@@ -95,10 +97,12 @@ export default function CheckoutPage() {
   // Hydrate guest cart from localStorage on first client render
   useEffect(() => {
     dispatch(hydrateGuestCart());
+    setHydrated(true);
   }, [dispatch]);
 
   // Reset redux slices on mount
   useEffect(() => {
+    orderHandledRef.current = null;
     dispatch(resetOrderState());
     dispatch(resetPaymentState());
   }, [dispatch]);
@@ -121,8 +125,9 @@ export default function CheckoutPage() {
     }
   }, [user]);
 
-  // Redirect to products page if cart is empty (only after loading)
+  // Redirect to products page if cart is empty (only after loading and client hydration)
   useEffect(() => {
+    if (!hydrated) return;
     if (
       !activeOrderId &&
       !placed &&
@@ -141,14 +146,12 @@ export default function CheckoutPage() {
       });
       router.push("/products");
     }
-  }, [activeOrderId, placed, cartLoading, authLoading, cartItems, router]);
+  }, [hydrated, activeOrderId, placed, cartLoading, authLoading, cartItems, router]);
 
-  // Capture COD instructions when order is placed
+  // Capture COD instructions when order is placed (run once per placed order)
   useEffect(() => {
-    if (placed && order) {
-      if (cartItems && cartItems.length > 0) {
-        setLastOrderedItems(cartItems);
-      }
+    if (placed && order && orderHandledRef.current !== order.orderId) {
+      orderHandledRef.current = order.orderId;
       setActiveOrderId(order.orderId);
       setCodPaymentInfo(order.payment?.data || null);
       toast.success("Order placed! Please submit EasyPaisa verification below.");
@@ -161,7 +164,7 @@ export default function CheckoutPage() {
     if (placeError) {
       toast.error(placeError);
     }
-  }, [placed, order, placeError, isAuthenticated, dispatch, cartItems]);
+  }, [placed, order, placeError, isAuthenticated, dispatch]);
 
   useEffect(() => {
     if (confirmed) {
@@ -192,6 +195,10 @@ export default function CheckoutPage() {
     if (missing.length > 0) {
       toast.error("Please fill in all required shipping fields");
       return;
+    }
+
+    if (cartItems && cartItems.length > 0) {
+      setLastOrderedItems(cartItems);
     }
 
     if (isAuthenticated) {

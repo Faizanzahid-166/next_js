@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect, useState, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
@@ -44,6 +44,7 @@ function CheckoutContent() {
   const [transactionId, setTransactionId] = useState("");
   const [proofImage, setProofImage] = useState("");
   const [uploadingProof, setUploadingProof] = useState(false);
+  const orderHandledRef = useRef(null);
 
   const handleScreenshotUpload = async (e) => {
     const file = e.target.files?.[0];
@@ -92,6 +93,7 @@ function CheckoutContent() {
 
   // Reset redux slices on mount
   useEffect(() => {
+    orderHandledRef.current = null;
     dispatch(resetOrderState());
     dispatch(resetPaymentState());
   }, [dispatch]);
@@ -127,7 +129,8 @@ function CheckoutContent() {
 
   // Capture COD/EasyPaisa instructions when order is placed
   useEffect(() => {
-    if (placed && order) {
+    if (placed && order && orderHandledRef.current !== order.orderId) {
+      orderHandledRef.current = order.orderId;
       setActiveOrderId(order.orderId);
       setCodPaymentInfo(order.payment?.data || null);
       toast.success("Order placed! Please submit EasyPaisa verification below.");
