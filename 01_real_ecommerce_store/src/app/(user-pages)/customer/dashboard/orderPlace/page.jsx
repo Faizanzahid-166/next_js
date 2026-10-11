@@ -503,17 +503,26 @@ function CheckoutContent() {
             <div className="divide-y divide-border/40 max-h-64 overflow-y-auto pr-1">
               {items.map((item) => (
                 <div key={item.productId} className="flex items-center justify-between py-3 gap-3">
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-3 min-w-0">
                     <div className="w-12 h-12 bg-white border border-border/40 rounded overflow-hidden flex items-center justify-center flex-shrink-0 relative">
                       <img src={getPrimaryImageUrl(item)} alt={item.name} className="w-full h-full object-cover" />
                       <div className="absolute inset-0 bg-neutral-950/2"></div>
                     </div>
-                    <div>
+                    <div className="min-w-0">
                       <p className="text-xs font-semibold text-neutral-800 leading-tight line-clamp-1">{item.name}</p>
-                      <p className="text-[10px] text-neutral-400 mt-0.5">Qty {item.quantity}</p>
+                      <div className="flex items-center flex-wrap gap-1.5 mt-1">
+                        <span className="text-[10px] text-neutral-400">
+                          Qty {item.quantity} × Rs. {item.price?.toLocaleString()}
+                        </span>
+                        <span className="inline-flex items-center text-[10px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200/70 rounded px-1.5 py-0.5">
+                          +Rs. 300 Delivery
+                        </span>
+                      </div>
                     </div>
                   </div>
-                  <p className="text-xs font-semibold text-neutral-950">Rs. {(item.price * item.quantity)?.toLocaleString()}</p>
+                  <div className="text-right flex-shrink-0">
+                    <p className="text-xs font-semibold text-neutral-950">Rs. {(item.price * item.quantity)?.toLocaleString()}</p>
+                  </div>
                 </div>
               ))}
             </div>
@@ -529,20 +538,18 @@ function CheckoutContent() {
             </div>
             
             <div className="flex justify-between text-neutral-500">
-              <span>
-                Delivery Fee {uniqueProductsCount > 0 && `(${uniqueProductsCount} × Rs. ${DELIVERY_FEE_PER_PRODUCT})`}
+              <span className="flex items-center gap-1.5">
+                <span>Delivery Fee</span>
+                {uniqueProductsCount > 0 && (
+                  <span className="text-[11px] text-neutral-400 font-normal">
+                    ({uniqueProductsCount} × Rs. {DELIVERY_FEE_PER_PRODUCT})
+                  </span>
+                )}
               </span>
               <span className="font-semibold text-neutral-950">
                 {deliveryFee > 0 ? `Rs. ${deliveryFee.toLocaleString()}` : "Free"}
               </span>
             </div>
-
-            {activeOrderId && codPaymentInfo && (
-              <div className="flex justify-between text-neutral-500 bg-green-50 border border-green-200/50 p-2 rounded text-xs mt-1">
-                <span>Verification Deposit</span>
-                <span className="font-semibold text-green-700">Rs. {codPaymentInfo.deliveryFee?.toLocaleString()}</span>
-              </div>
-            )}
 
             <div className="border-t border-border/40 my-3"></div>
 
@@ -550,6 +557,33 @@ function CheckoutContent() {
               <span>Total Amount</span>
               <span>Rs. {totalAmount?.toLocaleString()}</span>
             </div>
+
+            {/* COD Payment Split */}
+            {paymentMethod === "COD" && totalAmount > 0 && (
+              <div className="bg-neutral-100/70 border border-neutral-200/80 rounded-lg p-3 space-y-2 mt-3 text-xs">
+                <div className="text-[10px] font-bold uppercase tracking-wider text-neutral-500">
+                  Payment Split (Cash on Delivery)
+                </div>
+                <div className="flex justify-between items-center text-neutral-700">
+                  <span className="flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block flex-shrink-0" />
+                    <span>Pay Now via EasyPaisa (Deposit):</span>
+                  </span>
+                  <span className="font-bold text-emerald-700">
+                    Rs. {deliveryFee?.toLocaleString()}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center text-neutral-700">
+                  <span className="flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-blue-500 inline-block flex-shrink-0" />
+                    <span>Pay upon Delivery (Cash):</span>
+                  </span>
+                  <span className="font-bold text-neutral-900">
+                    Rs. {subTotal?.toLocaleString()}
+                  </span>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Secure Trust Badge */}

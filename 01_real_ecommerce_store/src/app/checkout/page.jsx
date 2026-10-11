@@ -83,6 +83,7 @@ export default function CheckoutPage() {
   const [transactionId, setTransactionId] = useState("");
   const [proofImage, setProofImage] = useState("");
   const [uploadingProof, setUploadingProof] = useState(false);
+  const [lastOrderedItems, setLastOrderedItems] = useState([]);
 
   // Determine which cart to use
   const isAuthenticated = !!user;
@@ -145,6 +146,9 @@ export default function CheckoutPage() {
   // Capture COD instructions when order is placed
   useEffect(() => {
     if (placed && order) {
+      if (cartItems && cartItems.length > 0) {
+        setLastOrderedItems(cartItems);
+      }
       setActiveOrderId(order.orderId);
       setCodPaymentInfo(order.payment?.data || null);
       toast.success("Order placed! Please submit EasyPaisa verification below.");
@@ -157,7 +161,7 @@ export default function CheckoutPage() {
     if (placeError) {
       toast.error(placeError);
     }
-  }, [placed, order, placeError, isAuthenticated, dispatch]);
+  }, [placed, order, placeError, isAuthenticated, dispatch, cartItems]);
 
   useEffect(() => {
     if (confirmed) {
@@ -303,13 +307,25 @@ export default function CheckoutPage() {
   }
 
   // Subtotal, Delivery Fee & Total Amount
+  const displayItems =
+    cartItems && cartItems.length > 0
+      ? cartItems
+      : order?.items || lastOrderedItems;
+
   const subTotal =
-    cartItems?.reduce((sum, item) => sum + item.price * item.quantity, 0) || 0;
-  const uniqueProductsCount = cartItems
-    ? new Set(cartItems.map((item) => item.productId)).size
+    displayItems?.reduce((sum, item) => sum + item.price * item.quantity, 0) ||
+    order?.subTotal ||
+    0;
+
+  const uniqueProductsCount = displayItems
+    ? new Set(displayItems.map((item) => item.productId)).size
     : 0;
-  const deliveryFee = uniqueProductsCount * DELIVERY_FEE_PER_PRODUCT;
-  const totalAmount = subTotal + deliveryFee;
+
+  const deliveryFee =
+    order?.deliveryFee ?? uniqueProductsCount * DELIVERY_FEE_PER_PRODUCT;
+
+  const totalAmount =
+    order?.totalAmount ?? subTotal + deliveryFee;
 
   // ── Render ────────────────────────────────────────────────────────────────
 
@@ -686,9 +702,16 @@ export default function CheckoutPage() {
         {/* ── RIGHT: Order Summary ── */}
         <div className="lg:col-span-5 bg-neutral-50 border border-border/40 rounded-xl p-6 space-y-6 shadow-sm">
           <div className="flex items-center justify-between border-b border-border/40 pb-3">
-            <h2 className="text-lg font-serif font-bold text-neutral-900">
-              Order Summary
-            </h2>
+            <div className="flex items-center gap-2">
+              <h2 className="text-lg font-serif font-bold text-neutral-900">
+                Order Summary
+              </h2>
+              {displayItems && displayItems.length > 0 && (
+                <span className="text-[11px] font-semibold bg-neutral-200/70 text-neutral-700 px-2 py-0.5 rounded-full">
+                  {displayItems.length} {displayItems.length === 1 ? "item" : "items"}
+                </span>
+              )}
+            </div>
             {cartItems && cartItems.length > 0 && !activeOrderId && (
               <button
                 type="button"
@@ -704,14 +727,14 @@ export default function CheckoutPage() {
           </div>
 
           {/* Cart items */}
-          {cartItems && cartItems.length > 0 ? (
+          {displayItems && displayItems.length > 0 ? (
             <div className="divide-y divide-border/40 max-h-64 overflow-y-auto pr-1">
-              {cartItems.map((item) => (
+              {displayItems.map((item) => (
                 <div
                   key={item.productId}
                   className="flex items-center justify-between py-3 gap-3"
                 >
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-3 min-w-0">
                     <div className="w-12 h-12 bg-white border border-border/40 rounded overflow-hidden flex items-center justify-center flex-shrink-0 relative">
                       <img
                         src={getPrimaryImageUrl(item)}
@@ -719,16 +742,25 @@ export default function CheckoutPage() {
                         className="w-full h-full object-cover"
                       />
                     </div>
-                    <div>
+                    <div className="min-w-0">
                       <p className="text-xs font-semibold text-neutral-800 leading-tight line-clamp-1">
                         {item.name}
                       </p>
-                      <p className="text-[10px] text-neutral-400 mt-0.5">Qty {item.quantity}</p>
+                      <div className="flex items-center flex-wrap gap-1.5 mt-1">
+                        <span className="text-[10px] text-neutral-400">
+                          Qty {item.quantity} × Rs. {item.price?.toLocaleString()}
+                        </span>
+                        <span className="inline-flex items-center text-[10px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200/70 rounded px-1.5 py-0.5">
+                          +Rs. 300 Delivery
+                        </span>
+                      </div>
                     </div>
                   </div>
-                  <p className="text-xs font-semibold text-neutral-950">
-                    Rs. {(item.price * item.quantity)?.toLocaleString()}
-                  </p>
+                  <div className="text-right flex-shrink-0">
+                    <p className="text-xs font-semibold text-neutral-950">
+                      Rs. {(item.price * item.quantity)?.toLocaleString()}
+                    </p>
+                  </div>
                 </div>
               ))}
             </div>
@@ -746,22 +778,18 @@ export default function CheckoutPage() {
             </div>
 
             <div className="flex justify-between text-neutral-500">
-              <span>
-                Delivery Fee {uniqueProductsCount > 0 && `(${uniqueProductsCount} × Rs. ${DELIVERY_FEE_PER_PRODUCT})`}
+              <span className="flex items-center gap-1.5">
+                <span>Delivery Fee</span>
+                {uniqueProductsCount > 0 && (
+                  <span className="text-[11px] text-neutral-400 font-normal">
+                    ({uniqueProductsCount} × Rs. {DELIVERY_FEE_PER_PRODUCT})
+                  </span>
+                )}
               </span>
               <span className="font-semibold text-neutral-950">
                 {deliveryFee > 0 ? `Rs. ${deliveryFee.toLocaleString()}` : "Free"}
               </span>
             </div>
-
-            {activeOrderId && codPaymentInfo && (
-              <div className="flex justify-between text-neutral-500 bg-green-50 border border-green-200/50 p-2 rounded text-xs mt-1">
-                <span>Verification Deposit</span>
-                <span className="font-semibold text-green-700">
-                  Rs. {codPaymentInfo.deliveryFee?.toLocaleString()}
-                </span>
-              </div>
-            )}
 
             <div className="border-t border-border/40 my-3" />
 
@@ -769,6 +797,33 @@ export default function CheckoutPage() {
               <span>Total Amount</span>
               <span>Rs. {totalAmount?.toLocaleString()}</span>
             </div>
+
+            {/* COD Payment Split */}
+            {paymentMethod === "COD" && totalAmount > 0 && (
+              <div className="bg-neutral-100/70 border border-neutral-200/80 rounded-lg p-3 space-y-2 mt-3 text-xs">
+                <div className="text-[10px] font-bold uppercase tracking-wider text-neutral-500">
+                  Payment Split (Cash on Delivery)
+                </div>
+                <div className="flex justify-between items-center text-neutral-700">
+                  <span className="flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block flex-shrink-0" />
+                    <span>Pay Now via EasyPaisa (Deposit):</span>
+                  </span>
+                  <span className="font-bold text-emerald-700">
+                    Rs. {deliveryFee?.toLocaleString()}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center text-neutral-700">
+                  <span className="flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-blue-500 inline-block flex-shrink-0" />
+                    <span>Pay upon Delivery (Cash):</span>
+                  </span>
+                  <span className="font-bold text-neutral-900">
+                    Rs. {subTotal?.toLocaleString()}
+                  </span>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Secure badge */}

@@ -301,6 +301,9 @@ async function createOrderAndRespond({
     orderId: order.id,
     isGuest: !userId,
     deliveryFee,
+    subTotal,
+    totalAmount,
+    items,
     payment: result.data,
   });
 }
