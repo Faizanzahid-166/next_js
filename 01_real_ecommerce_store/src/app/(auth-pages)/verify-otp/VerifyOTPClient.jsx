@@ -146,11 +146,10 @@ export default function VerifyOTPClient({ email }) {
             ].map((item) => (
               <div key={item.step} className="flex items-center gap-4">
                 <div
-                  className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${
-                    item.done
-                      ? 'bg-amber-500 text-black'
-                      : 'bg-neutral-800 border border-neutral-600 text-neutral-400'
-                  }`}
+                  className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${item.done
+                    ? 'bg-amber-500 text-black'
+                    : 'bg-neutral-800 border border-neutral-600 text-neutral-400'
+                    }`}
                 >
                   {item.done ? '✓' : item.step}
                 </div>
@@ -191,7 +190,7 @@ export default function VerifyOTPClient({ email }) {
               <span className="font-semibold text-neutral-800 break-all">{email}</span>
             </p>
             <p className="text-xs text-neutral-500 pt-1">
-              Please also check your spam folder to verify email.
+              If you didn't receive the code, please check inbox or spam folder to verify email.
             </p>
           </div>
 
@@ -207,11 +206,10 @@ export default function VerifyOTPClient({ email }) {
                 maxLength={6}
                 placeholder="· · · · · ·"
                 {...register('otp')}
-                className={`w-full px-4 py-4 bg-white border rounded-xl text-center text-2xl font-bold tracking-[0.5em] text-neutral-900 placeholder:text-neutral-300 placeholder:tracking-[0.3em] focus:outline-none focus:ring-2 transition-all ${
-                  errors.otp
-                    ? 'border-red-300 focus:ring-red-200'
-                    : 'border-neutral-200 focus:ring-amber-200 focus:border-amber-400'
-                }`}
+                className={`w-full px-4 py-4 bg-white border rounded-xl text-center text-2xl font-bold tracking-[0.5em] text-neutral-900 placeholder:text-neutral-300 placeholder:tracking-[0.3em] focus:outline-none focus:ring-2 transition-all ${errors.otp
+                  ? 'border-red-300 focus:ring-red-200'
+                  : 'border-neutral-200 focus:ring-amber-200 focus:border-amber-400'
+                  }`}
               />
               {errors.otp && (
                 <p className="text-xs text-red-500 flex items-center gap-1">
@@ -254,18 +252,17 @@ export default function VerifyOTPClient({ email }) {
             <button
               onClick={handleResend}
               disabled={loading || resendCooldown}
-              className={`w-full flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-semibold border transition-all ${
-                resendCooldown || loading
-                  ? 'border-neutral-200 text-neutral-400 cursor-not-allowed bg-neutral-50'
-                  : 'border-amber-300 text-amber-700 bg-amber-50 hover:bg-amber-100'
-              }`}
+              className={`w-full flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-semibold border transition-all ${resendCooldown || loading
+                ? 'border-neutral-200 text-neutral-400 cursor-not-allowed bg-neutral-50'
+                : 'border-amber-300 text-amber-700 bg-amber-50 hover:bg-amber-100'
+                }`}
             >
               <RotateCcw className={`w-4 h-4 ${loading && !resendCooldown ? 'animate-spin' : ''}`} />
               {resendCooldown
                 ? `Resend in ${cooldownSeconds}s`
                 : loading
-                ? 'Sending...'
-                : 'Resend OTP'}
+                  ? 'Sending...'
+                  : 'Resend OTP'}
             </button>
             <p className="text-xs text-neutral-400 text-center">
               Please also check your spam folder to verify email.
