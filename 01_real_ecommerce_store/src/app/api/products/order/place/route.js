@@ -4,7 +4,7 @@ import { successResponse, errorResponse } from "@/lib/response";
 import { handleCODPayment } from "@/lib/payments/cod";
 import { z } from "zod";
 
-const DELIVERY_FEE = 300;
+const DELIVERY_FEE_PER_PRODUCT = 300;
 
 // ---------------------------------------------------------------------------
 // Validation schemas
@@ -112,8 +112,10 @@ export async function POST(req) {
         image_url: item["03_ecommerce_store_products"]?.image_url || "",
       }));
 
+      const uniqueProductCount = new Set(items.map((item) => item.productId)).size;
+      const deliveryFee = uniqueProductCount * DELIVERY_FEE_PER_PRODUCT;
       const subTotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
-      const totalAmount = subTotal + DELIVERY_FEE;
+      const totalAmount = subTotal + deliveryFee;
 
       return await createOrderAndRespond({
         userId: user._id.toString(),
@@ -121,6 +123,7 @@ export async function POST(req) {
         shippingAddress,
         method,
         subTotal,
+        deliveryFee,
         totalAmount,
         cartIdToClear: cart.id,
       });
@@ -173,11 +176,13 @@ export async function POST(req) {
       });
     }
 
+    const uniqueProductCount = new Set(resolvedItems.map((item) => item.productId)).size;
+    const deliveryFee = uniqueProductCount * DELIVERY_FEE_PER_PRODUCT;
     const subTotal = resolvedItems.reduce(
       (sum, item) => sum + item.price * item.quantity,
       0
     );
-    const totalAmount = subTotal + DELIVERY_FEE;
+    const totalAmount = subTotal + deliveryFee;
 
     return await createOrderAndRespond({
       userId: null, // guest: no user account
@@ -192,6 +197,7 @@ export async function POST(req) {
       shippingAddress,
       method,
       subTotal,
+      deliveryFee,
       totalAmount,
       cartIdToClear: null, // guest cart lives in localStorage, cleared on frontend
     });
@@ -212,6 +218,7 @@ async function createOrderAndRespond({
   shippingAddress,
   method,
   subTotal,
+  deliveryFee,
   totalAmount,
   cartIdToClear,
 }) {
@@ -234,7 +241,7 @@ async function createOrderAndRespond({
       transaction_id: null,
       proof_image: null,
       sub_total: subTotal,
-      delivery_charge: DELIVERY_FEE,
+      delivery_charge: deliveryFee,
       shipping_full_name: shippingAddress.fullName,
       shipping_phone: shippingAddress.phone,
       shipping_address: shippingAddress.address,
@@ -266,7 +273,7 @@ async function createOrderAndRespond({
   // 3. Handle payment
   const codOrder = {
     id: order.id,
-    pricing: { deliveryCharge: DELIVERY_FEE },
+    pricing: { deliveryCharge: deliveryFee },
   };
 
   let result;
@@ -293,7 +300,7 @@ async function createOrderAndRespond({
   return successResponse(result.message, {
     orderId: order.id,
     isGuest: !userId,
-    deliveryFee: DELIVERY_FEE,
+    deliveryFee,
     payment: result.data,
   });
 }

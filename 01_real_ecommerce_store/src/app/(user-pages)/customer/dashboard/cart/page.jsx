@@ -112,11 +112,15 @@ export default function CartPage() {
     );
   }
 
-  // Total price
-  const totalPrice = items.reduce(
+  // Subtotal & Delivery Fee
+  const subTotal = items.reduce(
     (sum, item) => sum + item.price * item.quantity,
     0
   );
+  const DELIVERY_FEE_PER_PRODUCT = 300;
+  const uniqueProductsCount = items ? new Set(items.map((item) => item.productId)).size : 0;
+  const deliveryFee = uniqueProductsCount * DELIVERY_FEE_PER_PRODUCT;
+  const orderTotal = subTotal + deliveryFee;
 
   // Increase quantity
   const handleIncrease = async (item) => {
@@ -250,19 +254,23 @@ export default function CartPage() {
           <div className="space-y-3.5 text-sm">
             <div className="flex justify-between text-neutral-500">
               <span>Subtotal</span>
-              <span className="font-semibold text-neutral-900">Rs. {totalPrice?.toLocaleString()}</span>
+              <span className="font-semibold text-neutral-900">Rs. {subTotal?.toLocaleString()}</span>
             </div>
             
             <div className="flex justify-between text-neutral-500">
-              <span>Shipping</span>
-              <span className="text-green-600 font-semibold">Free</span>
+              <span>
+                Delivery Fee {uniqueProductsCount > 0 && `(${uniqueProductsCount} × Rs. ${DELIVERY_FEE_PER_PRODUCT})`}
+              </span>
+              <span className="font-semibold text-neutral-900">
+                {deliveryFee > 0 ? `Rs. ${deliveryFee.toLocaleString()}` : "Free"}
+              </span>
             </div>
 
             <div className="border-t border-border/40 my-3"></div>
 
             <div className="flex justify-between text-base font-bold text-neutral-900 pt-1">
               <span>Total</span>
-              <span>Rs. {totalPrice?.toLocaleString()}</span>
+              <span>Rs. {orderTotal?.toLocaleString()}</span>
             </div>
           </div>
 

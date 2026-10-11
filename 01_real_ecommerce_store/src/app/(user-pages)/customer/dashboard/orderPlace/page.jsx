@@ -201,8 +201,12 @@ function CheckoutContent() {
     );
   }
 
+  const DELIVERY_FEE_PER_PRODUCT = 300;
   // Calculate Subtotal for the preview
-  const totalPrice = items?.reduce((sum, item) => sum + item.price * item.quantity, 0) || 0;
+  const subTotal = items?.reduce((sum, item) => sum + item.price * item.quantity, 0) || 0;
+  const uniqueProductsCount = items ? new Set(items.map((item) => item.productId)).size : 0;
+  const deliveryFee = uniqueProductsCount * DELIVERY_FEE_PER_PRODUCT;
+  const totalAmount = subTotal + deliveryFee;
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 font-sans min-h-[calc(100vh-20rem)]">
@@ -521,18 +525,22 @@ function CheckoutContent() {
           <div className="border-t border-border/40 pt-4 space-y-3 text-sm">
             <div className="flex justify-between text-neutral-500">
               <span>Subtotal</span>
-              <span className="font-semibold text-neutral-950">Rs. {totalPrice?.toLocaleString()}</span>
+              <span className="font-semibold text-neutral-950">Rs. {subTotal?.toLocaleString()}</span>
             </div>
             
             <div className="flex justify-between text-neutral-500">
-              <span>Shipping</span>
-              <span className="text-green-600 font-semibold">Free</span>
+              <span>
+                Delivery Fee {uniqueProductsCount > 0 && `(${uniqueProductsCount} × Rs. ${DELIVERY_FEE_PER_PRODUCT})`}
+              </span>
+              <span className="font-semibold text-neutral-950">
+                {deliveryFee > 0 ? `Rs. ${deliveryFee.toLocaleString()}` : "Free"}
+              </span>
             </div>
 
             {activeOrderId && codPaymentInfo && (
               <div className="flex justify-between text-neutral-500 bg-green-50 border border-green-200/50 p-2 rounded text-xs mt-1">
                 <span>Verification Deposit</span>
-                <span className="font-semibold text-green-700">Rs. {codPaymentInfo.deliveryFee}</span>
+                <span className="font-semibold text-green-700">Rs. {codPaymentInfo.deliveryFee?.toLocaleString()}</span>
               </div>
             )}
 
@@ -540,7 +548,7 @@ function CheckoutContent() {
 
             <div className="flex justify-between text-base font-bold text-neutral-900 pt-1">
               <span>Total Amount</span>
-              <span>Rs. {totalPrice?.toLocaleString()}</span>
+              <span>Rs. {totalAmount?.toLocaleString()}</span>
             </div>
           </div>
 

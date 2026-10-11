@@ -36,7 +36,7 @@ import {
 // Constants
 // ---------------------------------------------------------------------------
 
-const DELIVERY_FEE = 300;
+const DELIVERY_FEE_PER_PRODUCT = 300;
 
 const emptyAddress = {
   fullName: "",
@@ -302,9 +302,14 @@ export default function CheckoutPage() {
     );
   }
 
-  // Subtotal
+  // Subtotal, Delivery Fee & Total Amount
   const subTotal =
     cartItems?.reduce((sum, item) => sum + item.price * item.quantity, 0) || 0;
+  const uniqueProductsCount = cartItems
+    ? new Set(cartItems.map((item) => item.productId)).size
+    : 0;
+  const deliveryFee = uniqueProductsCount * DELIVERY_FEE_PER_PRODUCT;
+  const totalAmount = subTotal + deliveryFee;
 
   // ── Render ────────────────────────────────────────────────────────────────
 
@@ -416,7 +421,7 @@ export default function CheckoutPage() {
                   <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5 text-amber-700" />
                   <div>
                     Please send the delivery fee deposit via EasyPaisa to{" "}
-                    <span className="font-bold text-neutral-900">0335-5838659</span> (Muhammad
+                    <span className="font-bold text-neutral-900">0331-9887683</span> (Muhammad
                     Faizan Zahid), then submit the transaction ID below.
                   </div>
                 </div>
@@ -626,11 +631,10 @@ export default function CheckoutPage() {
                 </h2>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <label
-                    className={`border rounded-lg p-4 cursor-pointer relative flex flex-col justify-between transition bg-white ${
-                      paymentMethod === "COD"
+                    className={`border rounded-lg p-4 cursor-pointer relative flex flex-col justify-between transition bg-white ${paymentMethod === "COD"
                         ? "border-neutral-900 ring-1 ring-neutral-900 shadow-sm"
                         : "border-border/60 hover:bg-neutral-50/50"
-                    }`}
+                      }`}
                   >
                     <input
                       type="radio"
@@ -742,15 +746,19 @@ export default function CheckoutPage() {
             </div>
 
             <div className="flex justify-between text-neutral-500">
-              <span>Shipping</span>
-              <span className="text-green-600 font-semibold">Free</span>
+              <span>
+                Delivery Fee {uniqueProductsCount > 0 && `(${uniqueProductsCount} × Rs. ${DELIVERY_FEE_PER_PRODUCT})`}
+              </span>
+              <span className="font-semibold text-neutral-950">
+                {deliveryFee > 0 ? `Rs. ${deliveryFee.toLocaleString()}` : "Free"}
+              </span>
             </div>
 
             {activeOrderId && codPaymentInfo && (
               <div className="flex justify-between text-neutral-500 bg-green-50 border border-green-200/50 p-2 rounded text-xs mt-1">
                 <span>Verification Deposit</span>
                 <span className="font-semibold text-green-700">
-                  Rs. {codPaymentInfo.deliveryFee}
+                  Rs. {codPaymentInfo.deliveryFee?.toLocaleString()}
                 </span>
               </div>
             )}
@@ -759,7 +767,7 @@ export default function CheckoutPage() {
 
             <div className="flex justify-between text-base font-bold text-neutral-900 pt-1">
               <span>Total Amount</span>
-              <span>Rs. {subTotal?.toLocaleString()}</span>
+              <span>Rs. {totalAmount?.toLocaleString()}</span>
             </div>
           </div>
 
