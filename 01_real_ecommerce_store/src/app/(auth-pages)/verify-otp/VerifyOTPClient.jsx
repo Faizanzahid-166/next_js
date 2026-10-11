@@ -164,7 +164,7 @@ export default function VerifyOTPClient({ email }) {
 
         {/* Bottom */}
         <div className="relative z-10 border-t border-neutral-800 pt-6">
-          <p className="text-neutral-500 text-xs">Check your spam folder if you don't see the email.</p>
+          <p className="text-neutral-500 text-xs">Please also check your spam folder to verify email.</p>
         </div>
       </div>
 
@@ -189,6 +189,9 @@ export default function VerifyOTPClient({ email }) {
             <p className="text-sm text-neutral-500">
               We sent a 6-digit code to{' '}
               <span className="font-semibold text-neutral-800 break-all">{email}</span>
+            </p>
+            <p className="text-xs text-neutral-500 pt-1">
+              Please also check your spam folder to verify email.
             </p>
           </div>
 
@@ -265,7 +268,7 @@ export default function VerifyOTPClient({ email }) {
                 : 'Resend OTP'}
             </button>
             <p className="text-xs text-neutral-400 text-center">
-              Also check your spam or junk mail folder.
+              Please also check your spam folder to verify email.
             </p>
           </div>
 

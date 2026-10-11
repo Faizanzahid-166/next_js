@@ -85,8 +85,11 @@ export default function VerifyOTPPage() {
     <div className="min-h-screen flex items-center justify-center">
       <div className="max-w-md w-full border p-6 rounded-2xl pt-10">
         <h1 className="text-2xl font-semibold mb-4">Verify OTP</h1>
-        <p className="text-gray-500 mb-4">
+        <p className="text-gray-500 mb-1">
           OTP sent to: <b>{email}</b>
+        </p>
+        <p className="text-sm text-gray-500 mb-4">
+          Please also check your spam folder to verify email.
         </p>
 
         <form onSubmit={handleSubmit(handleVerify)} className="space-y-4">
