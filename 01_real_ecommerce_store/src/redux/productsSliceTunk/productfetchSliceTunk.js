@@ -50,7 +50,7 @@ const productsSlice = createSlice({
     items: [],
     total: 0,
     page: 1,
-    limit: 10,
+    limit: 12,
     totalPages: 0,
     search: "",
     product_no: "", // ✅ add this

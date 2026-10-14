@@ -31,20 +31,6 @@ export default function NavbarProduct() {
       })
     );
   }, [search, product_no, category, price, analytics, page, limit, dispatch]);
-  useEffect(() => {
-  console.log("Products slice updated:", {
-
-    search,
-    product_no,
-    category,
-    price,
-    analytics,
-    page,
-    limit,
-  });
-}, [search, product_no, category, price, analytics, page, limit]);
-
-
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 p-4 bg-white shadow-md rounded-md">
       {/* Name/Description Search */}

@@ -1,57 +1,49 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
+import { useSelector, useDispatch } from "react-redux";
 import { SlidersHorizontal, ChevronLeft, ChevronRight } from "lucide-react";
-import { supabaseServer } from "@/lib/supabase";
+import { useEffect } from "react";
 import { getPrimaryImageUrl } from "@/lib/productImages";
+import { fetchProducts, setPage } from "@/redux/productsSliceTunk/productfetchSliceTunk";
 
-const BASE_URL = process.env.APP_DOMAIN || "https://ecommerce-store.blitz-box.site";
+export default function ProductsPage() {
+  const dispatch = useDispatch();
+  const { items, loading, page, totalPages, category, search, product_no, price, analytics, limit } = useSelector(
+    (state) => state.products
+  );
 
-export const revalidate = 60;
+  useEffect(() => {
+    dispatch(
+      fetchProducts({
+        q: search,
+        product_no,
+        category,
+        price,
+        analytics,
+        page,
+        limit,
+      })
+    );
+  }, [dispatch, search, product_no, category, price, analytics, page, limit]);
 
-export async function generateMetadata() {
-  return {
-    title: "Products | Blitz Store",
-    description: "Browse our curated product catalog from Blitz Store. Quality essentials, everyday favorites, and premium picks.",
-    alternates: { canonical: `${BASE_URL}/products` },
-    robots: { index: true, follow: true },
-  };
-}
-
-async function fetchProductsPageData(page = 1, limit = 24) {
-  const from = (page - 1) * limit;
-  const to = from + limit - 1;
-
-  const { data, count, error } = await supabaseServer
-    .from("03_ecommerce_store_products")
-    .select("id, name, price, image_url, category, created_at, stock, description", { count: "exact" })
-    .order("created_at", { ascending: false })
-    .range(from, to);
-
-  if (error) {
-    throw error;
+  if (loading && (!items || items.length === 0)) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="h-8 bg-neutral-200 rounded w-48 mb-8 animate-pulse"></div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+          {Array.from({ length: 8 }).map((_, index) => (
+            <div key={index} className="border border-border/40 rounded-xl overflow-hidden bg-white p-4 space-y-4 animate-pulse">
+              <div className="w-fit aspect-[4/3] bg-neutral-200 rounded-lg"></div>
+              <div className="h-4 bg-neutral-200 rounded w-3/4"></div>
+              <div className="h-4 bg-neutral-200 rounded w-1/4"></div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
   }
-
-  return {
-    items: data || [],
-    total: count || 0,
-    page,
-    limit,
-    totalPages: Math.ceil((count || 0) / limit),
-  };
-}
-
-export default async function ProductsPage({ searchParams }) {
-  const resolvedSearchParams = await searchParams;
-  const page = Number(resolvedSearchParams?.page || 1);
-
-  let products = { items: [], total: 0, page: 1, limit: 24, totalPages: 0 };
-  try {
-    products = await fetchProductsPageData(page || 1, 24);
-  } catch (error) {
-    console.error("Products page fetch failed:", error);
-  }
-
-  const { items, totalPages } = products;
 
   if (!items || items.length === 0) {
     return (
@@ -85,7 +77,7 @@ export default async function ProductsPage({ searchParams }) {
         <div className="flex items-center gap-4 text-xs font-semibold uppercase tracking-wider text-neutral-500">
           <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border bg-white shadow-sm">
             <SlidersHorizontal className="w-3.5 h-3.5" />
-            <span>Showing Page {products.page} of {totalPages}</span>
+            <span>Showing Page {page} of {totalPages}</span>
           </div>
         </div>
       </div>
@@ -119,25 +111,27 @@ export default async function ProductsPage({ searchParams }) {
 
       {totalPages > 1 && (
         <div className="flex justify-center items-center gap-6 mt-12 border-t border-border/40 pt-8">
-          <Link
-            href={`/products?page=${Math.max(1, products.page - 1)}`}
-            className={`inline-flex items-center gap-1 px-4 py-2 border border-border rounded-lg text-sm font-medium bg-white hover:bg-secondary text-neutral-800 ${products.page <= 1 ? "opacity-40 pointer-events-none" : ""}`}
+          <button
+            disabled={page <= 1}
+            onClick={() => dispatch(setPage(page - 1))}
+            className="inline-flex items-center gap-1 px-4 py-2 border border-border rounded-lg text-sm font-medium bg-white hover:bg-secondary text-neutral-800 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
             aria-label="Previous Page"
           >
             <ChevronLeft className="w-4 h-4" />
             <span>Previous</span>
-          </Link>
+          </button>
 
-          <span className="text-sm font-medium text-neutral-500">{products.page} / {totalPages}</span>
+          <span className="text-sm font-medium text-neutral-500">{page} / {totalPages}</span>
 
-          <Link
-            href={`/products?page=${Math.min(totalPages, products.page + 1)}`}
-            className={`inline-flex items-center gap-1 px-4 py-2 border border-border rounded-lg text-sm font-medium bg-white hover:bg-secondary text-neutral-800 ${products.page >= totalPages ? "opacity-40 pointer-events-none" : ""}`}
+          <button
+            disabled={page >= totalPages}
+            onClick={() => dispatch(setPage(page + 1))}
+            className="inline-flex items-center gap-1 px-4 py-2 border border-border rounded-lg text-sm font-medium bg-white hover:bg-secondary text-neutral-800 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
             aria-label="Next Page"
           >
             <span>Next</span>
             <ChevronRight className="w-4 h-4" />
-          </Link>
+          </button>
         </div>
       )}
     </div>
