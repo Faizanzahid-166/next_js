@@ -22,7 +22,7 @@ export const fetchProducts = createAsyncThunk(
 
       return data.data;
     } catch (err) {
-      console.log("API error:", err.response?.data?.message || err.message); // ✅ log error
+      //console.log("API error:", err.response?.data?.message || err.message); // ✅ log error
       throw err.response?.data?.message || err.message;
     }
   }

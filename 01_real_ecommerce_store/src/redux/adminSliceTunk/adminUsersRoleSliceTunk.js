@@ -13,7 +13,7 @@ export const fetchUsers = createAsyncThunk(
 
       const data = await res.json();
 
-      console.log("ALL USERS RESPONSE:", data); // 👈 debug
+     // console.log("ALL USERS RESPONSE:", data); // 👈 debug
 
       if (data.status !== "success") {
         throw new Error(data.message);
