@@ -1,6 +1,21 @@
 import Link from "next/link";
 import { ArrowRight, Leaf, Zap, Heart, Shield } from "lucide-react";
 
+export const metadata = {
+  title: "About Blitz – Our Story, Mission & Values",
+  description:
+    "Learn about Blitz Store Pakistan. We make premium, ethically sourced products accessible to everyone with COD & EasyPaisa payments. Founded 2024.",
+  alternates: {
+    canonical: "/about",
+  },
+  openGraph: {
+    title: "About Blitz – Our Story, Mission & Values",
+    description:
+      "Learn about Blitz Store Pakistan. Premium, ethically sourced products accessible to everyone.",
+    type: "website",
+  },
+};
+
 export default function About() {
   const values = [
     {

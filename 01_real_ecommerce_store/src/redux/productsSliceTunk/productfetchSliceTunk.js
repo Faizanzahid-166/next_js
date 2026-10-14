@@ -7,7 +7,7 @@ export const fetchProducts = createAsyncThunk(
   async (params = {}) => {
     try {
       const response = await axios.get("/api/products", { params });
-      console.log("All products:", response.data); // ✅ log API data
+      // console.log("All products:", response.data); // ✅ log API data
       const data = response.data;
 
       // Exact-match-first search sorting
@@ -34,7 +34,7 @@ export const fetchProductById = createAsyncThunk(
   async (id) => {
     try {
       const response = await axios.get(`/api/products/${id}`);
-      console.log("product-ID:", response.data); // ✅ log API data
+      // console.log("product-ID:", response.data); // ✅ log API data
       return response.data.data; // API returns { status, message, data }
     } catch (err) {
       throw err.response?.data?.message || err.message;
@@ -104,43 +104,43 @@ const productsSlice = createSlice({
       state.productError = null;
     },
   },
- extraReducers: (builder) => {
-  // FETCH PRODUCTS
-  builder
-    .addCase(fetchProducts.pending, (state) => {
-      state.loading = true;
-      state.error = null;
-    })
-    .addCase(fetchProducts.fulfilled, (state, action) => {
-      console.log("Redux fulfilled payload:", action.payload);
+  extraReducers: (builder) => {
+    // FETCH PRODUCTS
+    builder
+      .addCase(fetchProducts.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchProducts.fulfilled, (state, action) => {
+        //  console.log("Redux fulfilled payload:", action.payload);
 
-      state.loading = false;
-      state.items = action.payload.items;      // ✅ THIS WAS MISSING
-      state.total = action.payload.total;
-      state.page = action.payload.page;
-      state.limit = action.payload.limit;
-      state.totalPages = action.payload.totalPages;
-    })
-    .addCase(fetchProducts.rejected, (state, action) => {
-      state.loading = false;
-      state.error = action.error.message;
-    });
+        state.loading = false;
+        state.items = action.payload.items;      // ✅ THIS WAS MISSING
+        state.total = action.payload.total;
+        state.page = action.payload.page;
+        state.limit = action.payload.limit;
+        state.totalPages = action.payload.totalPages;
+      })
+      .addCase(fetchProducts.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message;
+      });
 
-  // FETCH SINGLE PRODUCT
-  builder
-    .addCase(fetchProductById.pending, (state) => {
-      state.productLoading = true;
-      state.productError = null;
-    })
-    .addCase(fetchProductById.fulfilled, (state, action) => {
-      state.productLoading = false;
-      state.selectedProduct = action.payload;
-    })
-    .addCase(fetchProductById.rejected, (state, action) => {
-      state.productLoading = false;
-      state.productError = action.error.message;
-    });
-},
+    // FETCH SINGLE PRODUCT
+    builder
+      .addCase(fetchProductById.pending, (state) => {
+        state.productLoading = true;
+        state.productError = null;
+      })
+      .addCase(fetchProductById.fulfilled, (state, action) => {
+        state.productLoading = false;
+        state.selectedProduct = action.payload;
+      })
+      .addCase(fetchProductById.rejected, (state, action) => {
+        state.productLoading = false;
+        state.productError = action.error.message;
+      });
+  },
 });
 
 export const {

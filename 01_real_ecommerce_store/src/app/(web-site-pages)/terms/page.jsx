@@ -2,6 +2,15 @@ import fs from 'fs'
 import path from 'path'
 import React from 'react'
 
+export const metadata = {
+  title: "Terms & Conditions – Blitz Store Pakistan",
+  description:
+    "Read the Terms & Conditions for Blitz Store Pakistan. Understand our policies on orders, returns, payments, shipping, and customer rights.",
+  alternates: {
+    canonical: "/terms",
+  },
+};
+
 export default function TermsPage() {
   const mdPath = path.join(process.cwd(), 'public', 'terms.md')
   let content = 'Terms and Conditions not provided. Please add your policy to public/terms.md.'
