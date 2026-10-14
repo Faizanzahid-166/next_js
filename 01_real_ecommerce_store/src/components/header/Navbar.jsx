@@ -55,101 +55,106 @@ export default function Navbar() {
 
   return (
     <nav className="sticky top-0 z-50 backdrop-blur-md bg-background/85 border-b border-border/40 text-foreground transition-all duration-200">
-      <div className="flex items-center justify-between max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16">
-
-        {/* LEFT: LOGO */}
-        <Link href="/" className="text-xl font-serif font-semibold tracking-tight hover:opacity-90 transition-opacity">
-          BLITZ STORE
-        </Link>
-
-        {/* CENTER: NAV LINKS */}
-        <ul className="hidden md:flex gap-8 items-center absolute left-1/2 transform -translate-x-1/2">
-          {navLinks.map((link) => (
-            <li key={link.name}>
-              <Link
-                href={link.path}
-                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors duration-200"
-              >
-                {link.name}
-              </Link>
-            </li>
-          ))}
-        </ul>
-
-        {/* RIGHT: CART + AUTH */}
-        <div className="hidden md:flex items-center gap-5">
-          {/* Cart Icon — visible for all users (guests & authenticated customers) */}
-          {(!user || user.role === "customer") && (
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-16">
+        <div className="flex items-center justify-between gap-2 sm:gap-3 h-full">
+          {/* LEFT: LOGO */}
+          <div className="flex min-w-0 items-center">
             <Link
-              href={cartHref}
-              className="relative p-2 text-muted-foreground hover:text-foreground transition-colors duration-200"
-              aria-label="Shopping Cart"
+              href="/"
+              className="text-lg sm:text-xl font-serif font-semibold tracking-tight hover:opacity-90 transition-opacity whitespace-nowrap"
             >
-              <ShoppingBag className="w-5 h-5 stroke-[1.5]" />
-              {cartCount > 0 && (
-                <span className="absolute top-0 right-0 inline-flex items-center justify-center px-1.5 py-0.5 text-[10px] font-bold leading-none text-white bg-primary rounded-full transform translate-x-1/2 -translate-y-1/2">
-                  {cartCount}
-                </span>
-              )}
+              BLITZ STORE
             </Link>
-          )}
+          </div>
 
-          {user ? (
-            <div className="flex items-center gap-4">
-              <Link
-                href={user.role === "customer" ? "/customer/dashboard" : "/admin/dashboard"}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-secondary/80 hover:bg-secondary text-secondary-foreground text-xs font-medium border border-border/50 transition-colors"
-              >
-                <User className="w-3.5 h-3.5 text-muted-foreground" />
-                <span>{user.name}</span>
-                <span className="text-[10px] uppercase tracking-wider text-muted-foreground ml-0.5">
-                  ({user.role})
-                </span>
-              </Link>
+          {/* CENTER: NAV LINKS */}
+          <ul className="hidden md:flex flex-1 justify-center items-center gap-6 lg:gap-8 min-w-0">
+            {navLinks.map((link) => (
+              <li key={link.name} className="min-w-0">
+                <Link
+                  href={link.path}
+                  className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors duration-200 whitespace-nowrap"
+                >
+                  {link.name}
+                </Link>
+              </li>
+            ))}
+          </ul>
 
-              <button
-                onClick={handleLogout}
-                className="border border-border text-foreground hover:bg-secondary px-3 py-1.5 rounded-md text-xs font-medium transition-colors"
-              >
-                Logout
-              </button>
-            </div>
-          ) : (
-            <div className="flex items-center gap-4">
+          {/* RIGHT: CART + AUTH */}
+          <div className="hidden md:flex items-center gap-3 lg:gap-5 flex-shrink-0">
+            {(!user || user.role === "customer") && (
               <Link
-                href="/login"
-                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+                href={cartHref}
+                className="relative p-2 text-muted-foreground hover:text-foreground transition-colors duration-200"
+                aria-label="Shopping Cart"
               >
-                Login
+                <ShoppingBag className="w-5 h-5 stroke-[1.5]" />
+                {cartCount > 0 && (
+                  <span className="absolute top-0 right-0 inline-flex items-center justify-center px-1.5 py-0.5 text-[10px] font-bold leading-none text-white bg-primary rounded-full transform translate-x-1/2 -translate-y-1/2">
+                    {cartCount}
+                  </span>
+                )}
               </Link>
-              <Link
-                href="/signup"
-                className="bg-primary text-primary-foreground hover:bg-primary/90 px-4 py-2 rounded-md text-sm font-medium transition-colors"
-              >
-                Signup
-              </Link>
-            </div>
-          )}
+            )}
+
+            {user ? (
+              <div className="flex items-center gap-2 lg:gap-4 min-w-0">
+                <Link
+                  href={user.role === "customer" ? "/customer/dashboard" : "/admin/dashboard"}
+                  className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-secondary/80 hover:bg-secondary text-secondary-foreground text-[11px] sm:text-xs font-medium border border-border/50 transition-colors max-w-[180px] truncate"
+                >
+                  <User className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0" />
+                  <span className="truncate">{user.name}</span>
+                  <span className="text-[10px] uppercase tracking-wider text-muted-foreground ml-0.5 flex-shrink-0">
+                    ({user.role})
+                  </span>
+                </Link>
+
+                <button
+                  onClick={handleLogout}
+                  className="border border-border text-foreground hover:bg-secondary px-3 py-1.5 rounded-md text-xs font-medium transition-colors"
+                >
+                  Logout
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2 lg:gap-4">
+                <Link
+                  href="/login"
+                  className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  Login
+                </Link>
+                <Link
+                  href="/signup"
+                  className="bg-primary text-primary-foreground hover:bg-primary/90 px-4 py-2 rounded-md text-sm font-medium transition-colors"
+                >
+                  Signup
+                </Link>
+              </div>
+            )}
+          </div>
+
+          {/* MOBILE MENU */}
+          <MobileMenu
+            user={user}
+            handleLogout={handleLogout}
+            navLinks={[
+              ...navLinks,
+              {
+                name: "Profile",
+                path:
+                  user?.role === "customer" ? "/customer/dashboard" : "/admin/dashboard",
+              },
+              {
+                name: "Cart",
+                path: cartHref,
+              },
+            ]}
+            cartCount={cartCount}
+          />
         </div>
-
-        {/* MOBILE MENU */}
-        <MobileMenu
-          user={user}
-          handleLogout={handleLogout}
-          navLinks={[
-            ...navLinks,
-            {
-              name: "Profile",
-              path:
-                user?.role === "customer" ? "/customer/dashboard" : "/admin/dashboard",
-            },
-            {
-              name: "Cart",
-              path: cartHref,
-            },
-          ]}
-          cartCount={cartCount}
-        />
       </div>
     </nav>
   );

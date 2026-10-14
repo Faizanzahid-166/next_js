@@ -11,13 +11,14 @@ export default function MobileMenu({ navLinks, user, handleLogout, cartCount = 0
   const closeMenu = () => setOpen(false);
 
   return (
-    <div className="md:hidden flex items-center gap-4">
+    <div className="relative md:hidden flex items-center gap-2 ml-auto">
       {/* Small cart bag on the mobile bar too for easy access */}
       {user && user.role === "customer" && (
         <Link
           href="/customer/dashboard/cart"
-          className="relative p-1 text-muted-foreground hover:text-foreground transition-colors"
+          className="relative p-2 text-muted-foreground hover:text-foreground transition-colors rounded-md"
           onClick={closeMenu}
+          aria-label="Open cart"
         >
           <ShoppingBag className="w-5 h-5 stroke-[1.5]" />
           {cartCount > 0 && (
@@ -31,16 +32,16 @@ export default function MobileMenu({ navLinks, user, handleLogout, cartCount = 0
       {/* Menu Button */}
       <button
         onClick={toggle}
-        className="p-1 text-muted-foreground hover:text-foreground transition-colors focus:outline-none"
-        aria-label="Toggle Menu"
+        className="p-2 text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors focus:outline-none rounded-md"
+        aria-label={open ? "Close menu" : "Open menu"}
+        aria-expanded={open}
       >
         {open ? <X className="w-5 h-5 stroke-[1.5]" /> : <Menu className="w-5 h-5 stroke-[1.5]" />}
       </button>
 
       {/* Dropdown Menu */}
       {open && (
-        <div className="absolute top-16 left-0 right-0 bg-background/95 backdrop-blur-md border-b border-border/80 p-6 flex flex-col gap-4 animate-fadeIn z-50">
-          {/* Navigation Links */}
+        <div className="absolute top-full right-0 left-0 mt-2 bg-background/95 backdrop-blur-md border border-border/80 rounded-xl shadow-lg p-4 flex flex-col gap-4 animate-fadeIn z-50">
           <div className="flex flex-col gap-2">
             {navLinks.map((link) => (
               <Link
@@ -59,11 +60,10 @@ export default function MobileMenu({ navLinks, user, handleLogout, cartCount = 0
             ))}
           </div>
 
-          {/* Auth Buttons */}
           <div className="border-t border-border/40 pt-4 flex flex-col gap-3">
             {user ? (
               <div className="flex flex-col gap-2">
-                <div className="px-3 text-xs text-muted-foreground font-medium">
+                <div className="px-3 text-xs text-muted-foreground font-medium break-words">
                   Signed in as <span className="text-foreground">{user.name}</span> ({user.role})
                 </div>
                 <button
@@ -99,7 +99,6 @@ export default function MobileMenu({ navLinks, user, handleLogout, cartCount = 0
         </div>
       )}
 
-      {/* Small fade-in effect */}
       <style jsx>{`
         .animate-fadeIn {
           animation: fadeIn 0.2s ease-out;

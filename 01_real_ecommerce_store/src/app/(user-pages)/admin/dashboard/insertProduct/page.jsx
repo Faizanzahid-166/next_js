@@ -185,15 +185,17 @@ export default function AdminProductsPage() {
     }
   };
   return (
-    <div className="min-h-screen p-6 bg-gray-100">
-      <div className="max-w-7xl mx-auto bg-white shadow-lg rounded-xl p-6">
+    <div className="min-h-screen p-4 sm:p-6 bg-gray-100">
+      <div className="max-w-7xl mx-auto bg-white shadow-lg rounded-xl p-4 sm:p-6 overflow-hidden">
         <h1 className="text-2xl font-bold mb-4">Admin Panel – Products</h1>
         <h2 className="text-lg font-semibold">
         Total Products: {total}
         </h2>
 
         {/* Filters/Search */}
-        <NavbarProduct />
+        <div className="mt-4 overflow-hidden">
+          <NavbarProduct />
+        </div>
 
         {/* Messages */}
         {message && <p className="text-green-600 mb-2">{message}</p>}
@@ -204,7 +206,7 @@ export default function AdminProductsPage() {
           <h2 className="font-semibold mb-2">
             {editingProductId ? "Edit Product" : "Add Product"}
           </h2>
-          <div className="flex flex-wrap gap-2 mb-3">
+          <div className="flex flex-col md:flex-row flex-wrap gap-2 mb-3">
             {["product_no", "name", "price", "stock"].map(
               (field) => (
                 <input
@@ -214,20 +216,20 @@ export default function AdminProductsPage() {
                   placeholder={field.replace("_", " ")}
                   value={form[field]}
                   onChange={handleChange}
-                  className="border p-2 rounded flex-1 min-w-[150px]"
+                  className="border p-2 rounded w-full md:flex-1 min-w-0"
                 />
               )
             )}
 
             {isCustomCategory ? (
-              <div className="flex gap-1 flex-1 min-w-[180px]">
+              <div className="flex gap-1 w-full md:flex-1 min-w-0">
                 <input
                   type="text"
                   name="category"
                   placeholder="Enter custom category"
                   value={form.category}
                   onChange={handleChange}
-                  className="border p-2 rounded flex-1 min-w-[130px] bg-white"
+                  className="border p-2 rounded flex-1 min-w-0 bg-white"
                   autoFocus
                 />
                 <button
@@ -251,7 +253,7 @@ export default function AdminProductsPage() {
                     handleChange(e);
                   }
                 }}
-                className="border p-2 rounded flex-1 min-w-[180px] bg-white cursor-pointer"
+                className="border p-2 rounded w-full md:flex-1 min-w-0 bg-white cursor-pointer"
               >
                 <option value="">Select Category *</option>
                 {categories.map((cat) => (
@@ -268,8 +270,8 @@ export default function AdminProductsPage() {
           </div>
 
           <div className="flex flex-col md:flex-row gap-4 items-start mb-3">
-            <div className="flex-1 w-full">
-              <div className="flex gap-2">
+            <div className="flex-1 w-full min-w-0">
+              <div className="flex flex-col sm:flex-row gap-2">
                 <input
                   type="text"
                   name="image_url"
@@ -278,7 +280,7 @@ export default function AdminProductsPage() {
                   onChange={handleChange}
                   className="border p-2 rounded w-full"
                 />
-                <button onClick={handleAddImageUrl} className="px-3 py-2 bg-gray-200 rounded">Add</button>
+                <button onClick={handleAddImageUrl} className="px-3 py-2 bg-gray-200 rounded whitespace-nowrap">Add</button>
               </div>
               <div className="mt-2 text-sm text-neutral-600">Or upload one or more images from your desktop:</div>
             </div>
@@ -331,17 +333,17 @@ export default function AdminProductsPage() {
             onChange={handleChange}
             className="border p-2 rounded w-full mb-3"
           />
-          <div className="flex gap-2">
+          <div className="flex flex-col sm:flex-row gap-2">
             <button
               onClick={saveProduct}
-              className="bg-blue-600 text-white px-3 py-1 rounded"
+              className="bg-blue-600 text-white px-3 py-2 rounded"
             >
               {editingProductId ? "Update Product" : "Add Product"}
             </button>
             {editingProductId && (
               <button
                 onClick={cancelEdit}
-                className="bg-gray-400 text-white px-3 py-1 rounded"
+                className="bg-gray-400 text-white px-3 py-2 rounded"
               >
                 Cancel
               </button>
