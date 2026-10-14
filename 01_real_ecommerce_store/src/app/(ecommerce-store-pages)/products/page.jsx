@@ -1,49 +1,55 @@
-"use client";
-
 import Image from "next/image";
-import { useSelector, useDispatch } from "react-redux";
-import { getPrimaryImageUrl } from "@/lib/productImages";
-import { setPage } from "@/redux/productsSliceTunk/productfetchSliceTunk";
 import Link from "next/link";
 import { ChevronLeft, ChevronRight, SlidersHorizontal } from "lucide-react";
+import { supabaseServer } from "@/lib/supabase";
+import { getPrimaryImageUrl } from "@/lib/productImages";
 
-export default function Product() {
-  const dispatch = useDispatch();
-  const { items, loading, page, totalPages } = useSelector(
-    (state) => state.products
-  );
+export const revalidate = 60; // ISR
 
-  // 1. LOADING SKELETON STATE
-  if (loading) {
-    return (
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {/* Top Header skeleton */}
-        <div className="h-8 bg-neutral-200 rounded w-48 mb-8 animate-pulse"></div>
+const BASE_URL = "https://ecommerce-store.blitz-box.site";
 
-        {/* Product Grid skeleton */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
-          {Array.from({ length: 8 }).map((_, index) => (
-            <div key={index} className="border border-border/40 rounded-xl overflow-hidden bg-white p-4 space-y-4 animate-pulse">
-              <div className="w-fit aspect-[4/3] bg-neutral-200 rounded-lg"></div>
-              <div className="h-4 bg-neutral-200 rounded w-3/4"></div>
-              <div className="h-4 bg-neutral-200 rounded w-1/4"></div>
-            </div>
-          ))}
-        </div>
-      </div>
-    );
+export async function generateMetadata() {
+  return {
+    title: "Products — Blitz Store",
+    description: "Browse our curated collection of products. Quality goods, nationwide delivery.",
+    alternates: { canonical: `${BASE_URL}/products` },
+    robots: { index: true, follow: true },
+  };
+}
+
+async function fetchProducts(page = 1, limit = 24) {
+  const from = (page - 1) * limit;
+  const to = from + limit - 1;
+
+  const { data, error, count } = await supabaseServer
+    .from("03_ecommerce_store_products")
+    .select("id, name, price, images, category, created_at, stock, description", { count: "exact" })
+    .order("created_at", { ascending: false })
+    .range(from, to);
+
+  if (error) throw error;
+  return { items: data || [], total: count || 0, page, limit, totalPages: Math.ceil((count || 0) / limit) };
+}
+
+export default async function ProductPage({ searchParams }) {
+  const page = parseInt(searchParams?.page || "1", 10) || 1;
+
+  let products = { items: [], total: 0, page: 1, limit: 24, totalPages: 0 };
+  try {
+    products = await fetchProducts(page, 24);
+  } catch (err) {
+    console.error("Server products fetch error:", err);
   }
 
-  // 2. EMPTY STATE
+  const { items, totalPages } = products;
+
   if (!items || items.length === 0) {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 text-center">
         <div className="max-w-md mx-auto space-y-4">
           <span className="text-4xl">🔍</span>
-          <h2 className="text-2xl font-serif font-bold text-neutral-900">No products found</h2>
-          <p className="text-sm text-neutral-500">
-            We couldn't find any products in our database right now. Please check back later.
-          </p>
+          <h1 className="text-2xl font-serif font-bold text-neutral-900">No products found</h1>
+          <p className="text-sm text-neutral-500">We couldn't find any products in our catalog right now. Please check back later.</p>
           <Link
             href="/"
             className="inline-block px-5 py-2.5 bg-primary text-primary-foreground rounded-md text-sm font-medium hover:bg-primary/95 transition-colors"
@@ -57,12 +63,11 @@ export default function Product() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 font-sans">
-
-      {/* Top action bar */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between border-b border-border/40 pb-6 mb-8 gap-4">
         <div>
           <span className="text-xs uppercase tracking-wider text-neutral-400 font-semibold">Catalog</span>
           <h1 className="text-3xl font-serif font-bold text-neutral-900 mt-1">Our Collection</h1>
+          <p className="text-sm text-neutral-500 mt-2">Discover our latest products and seasonal picks.</p>
         </div>
 
         <div className="flex items-center gap-4 text-xs font-semibold uppercase tracking-wider text-neutral-500">
@@ -73,7 +78,6 @@ export default function Product() {
         </div>
       </div>
 
-      {/* Product Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
         {items.map((product) => (
           <Link
@@ -81,7 +85,6 @@ export default function Product() {
             href={`/products/${product.id}`}
             className="group block border border-border/40 rounded-xl overflow-hidden bg-white hover:shadow-md transition-shadow duration-300"
           >
-            {/* Image Container: Full outfit view with padding */}
             <div className="relative w-full aspect-[3/4] bg-neutral-50/90 overflow-hidden flex items-center justify-center p-2">
               <Image
                 src={getPrimaryImageUrl(product)}
@@ -93,48 +96,36 @@ export default function Product() {
               <div className="absolute inset-0 bg-neutral-950/0 group-hover:bg-neutral-950/5 transition-colors pointer-events-none"></div>
             </div>
 
-            {/* Product Meta */}
             <div className="p-5 space-y-1">
-              <span className="text-[10px] uppercase tracking-wider text-neutral-400 font-semibold block">
-                {product.category || "General"}
-              </span>
-              <h3 className="text-base font-serif font-semibold text-neutral-900 group-hover:text-neutral-700 transition-colors leading-tight">
-                {product.name}
-              </h3>
-              <p className="text-sm font-semibold text-primary/95 pt-1">
-                Rs. {product.price?.toLocaleString()}
-              </p>
+              <span className="text-[10px] uppercase tracking-wider text-neutral-400 font-semibold block">{product.category || "General"}</span>
+              <h3 className="text-base font-serif font-semibold text-neutral-900 group-hover:text-neutral-700 transition-colors leading-tight">{product.name}</h3>
+              <p className="text-sm font-semibold text-primary/95 pt-1">Rs. {product.price?.toLocaleString()}</p>
             </div>
           </Link>
         ))}
       </div>
 
-      {/* Pagination block */}
       {totalPages > 1 && (
         <div className="flex justify-center items-center gap-6 mt-12 border-t border-border/40 pt-8">
-          <button
-            disabled={page <= 1}
-            onClick={() => dispatch(setPage(page - 1))}
-            className="inline-flex items-center gap-1 px-4 py-2 border border-border rounded-lg text-sm font-medium bg-white hover:bg-secondary text-neutral-800 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+          <Link
+            href={`/products?page=${Math.max(1, page - 1)}`}
+            className={`inline-flex items-center gap-1 px-4 py-2 border border-border rounded-lg text-sm font-medium bg-white hover:bg-secondary text-neutral-800 ${page <= 1 ? 'opacity-40 pointer-events-none' : ''}`}
             aria-label="Previous Page"
           >
             <ChevronLeft className="w-4 h-4" />
             <span>Previous</span>
-          </button>
+          </Link>
 
-          <span className="text-sm font-medium text-neutral-500">
-            {page} / {totalPages}
-          </span>
+          <span className="text-sm font-medium text-neutral-500">{page} / {totalPages}</span>
 
-          <button
-            disabled={page >= totalPages}
-            onClick={() => dispatch(setPage(page + 1))}
-            className="inline-flex items-center gap-1 px-4 py-2 border border-border rounded-lg text-sm font-medium bg-white hover:bg-secondary text-neutral-800 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+          <Link
+            href={`/products?page=${Math.min(totalPages, page + 1)}`}
+            className={`inline-flex items-center gap-1 px-4 py-2 border border-border rounded-lg text-sm font-medium bg-white hover:bg-secondary text-neutral-800 ${page >= totalPages ? 'opacity-40 pointer-events-none' : ''}`}
             aria-label="Next Page"
           >
             <span>Next</span>
             <ChevronRight className="w-4 h-4" />
-          </button>
+          </Link>
         </div>
       )}
     </div>

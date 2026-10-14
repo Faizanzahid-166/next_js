@@ -3,9 +3,7 @@ import { createClient } from "@supabase/supabase-js";
 
 const BASE_URL =
   process.env.APP_DOMAIN ||
-  (process.env.VERCEL_URL
-    ? `https://${process.env.VERCEL_URL}`
-    : "http://localhost:3000");
+  (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "https://ecommerce-store.blitz-box.site");
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // ── Static pages ──

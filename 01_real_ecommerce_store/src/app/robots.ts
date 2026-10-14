@@ -2,9 +2,7 @@ import type { MetadataRoute } from "next";
 
 const BASE_URL =
   process.env.APP_DOMAIN ||
-  (process.env.VERCEL_URL
-    ? `https://${process.env.VERCEL_URL}`
-    : "http://localhost:3000");
+  (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "https://ecommerce-store.blitz-box.site");
 
 export default function robots(): MetadataRoute.Robots {
   return {
