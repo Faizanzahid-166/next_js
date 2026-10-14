@@ -52,7 +52,7 @@ export default function ProductsPage() {
           <span className="text-4xl">🔍</span>
           <h1 className="text-2xl font-serif font-bold text-neutral-900">No products found</h1>
           <p className="text-sm text-neutral-500">
-            We couldn't find any products in our database right now. Please check back later.
+            We couldn’t find any products in our database right now. Please check back later.
           </p>
           <Link
             href="/"
