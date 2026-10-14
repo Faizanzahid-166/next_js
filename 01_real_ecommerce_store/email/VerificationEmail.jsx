@@ -14,7 +14,9 @@ import {
   Img,
 } from '@react-email/components';
 
-export default function VerificationEmail({ username, otp }) {
+export default function VerificationEmail({ name, otp, verifyUrl }) {
+  const userName = name || 'there';
+
   return (
     <Html lang="en" dir="ltr">
       <Head>
@@ -36,11 +38,9 @@ export default function VerificationEmail({ username, otp }) {
       <Body style={styles.body}>
         <Container style={styles.container}>
 
-          {/* ── HEADER ── */}
           <Section style={styles.header}>
             <Row>
               <Column align="center">
-                {/* Logo wordmark */}
                 <table cellPadding={0} cellSpacing={0} style={{ margin: '0 auto' }}>
                   <tr>
                     <td style={styles.logoIconWrap}>
@@ -56,24 +56,20 @@ export default function VerificationEmail({ username, otp }) {
             </Row>
           </Section>
 
-          {/* ── BODY CARD ── */}
           <Section style={styles.card}>
-
-            {/* Icon top */}
             <Row>
               <Column align="center" style={{ paddingBottom: '20px' }}>
                 <div style={styles.shieldIcon}>🔐</div>
               </Column>
             </Row>
 
-            {/* Greeting */}
             <Row>
               <Column>
                 <Heading as="h1" style={styles.heading}>
                   Verify your email
                 </Heading>
                 <Text style={styles.subheading}>
-                  Hi <strong style={{ color: '#111' }}>{username}</strong>, welcome to Blitz Store!
+                  Hi <strong style={{ color: '#111' }}>{userName}</strong>, welcome to Blitz Store!
                 </Text>
                 <Text style={styles.bodyText}>
                   You're just one step away from accessing your account. Use the verification code below
@@ -82,9 +78,8 @@ export default function VerificationEmail({ username, otp }) {
               </Column>
             </Row>
 
-            {/* OTP Code Block */}
             <Row>
-              <Column align="center" style={{ padding: '20px 0 28px' }}>
+              <Column align="center" style={{ padding: '20px 0 20px' }}>
                 <div style={styles.otpWrapper}>
                   <Text style={styles.otpLabel}>YOUR VERIFICATION CODE</Text>
                   <div style={styles.otpBox}>
@@ -95,9 +90,14 @@ export default function VerificationEmail({ username, otp }) {
               </Column>
             </Row>
 
+            <Row>
+              <Column align="center" style={{ paddingBottom: '20px' }}>
+                <a href={verifyUrl} style={styles.verifyButton}>Verify email</a>
+              </Column>
+            </Row>
+
             <Hr style={styles.divider} />
 
-            {/* Security note */}
             <Row>
               <Column>
                 <Text style={styles.securityNote}>
@@ -267,6 +267,18 @@ const styles = {
     fontSize: '12px',
     color: '#a1a1aa',
     margin: '14px 0 0',
+  },
+
+  verifyButton: {
+    display: 'inline-block',
+    backgroundColor: '#0a0a0a',
+    color: '#ffffff',
+    textDecoration: 'none',
+    borderRadius: '10px',
+    padding: '12px 22px',
+    fontSize: '14px',
+    fontWeight: '700',
+    letterSpacing: '0.3px',
   },
 
   divider: {
