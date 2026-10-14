@@ -26,8 +26,7 @@ const inter = Inter({
 });
 
 const baseUrl =
-  process.env.APP_DOMAIN ||
-  (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000");
+  process.env.APP_DOMAIN || "https://ecommerce-store.blitz-box.site";
 
 export const metadata: Metadata = {
   metadataBase: new URL(baseUrl),

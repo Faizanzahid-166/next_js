@@ -1,0 +1,160 @@
+"use client";
+
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useDispatch, useSelector } from "react-redux";
+import { toast } from "sonner";
+import Link from "next/link";
+import { ChevronLeft, ShoppingBag, ShieldCheck } from "lucide-react";
+
+import ImageGallery from "@/components/product/ImageGallery";
+import { getProductImages, getPrimaryImageUrl } from "@/lib/productImages";
+import { addCartItem, fetchCart } from "@/redux/productsSliceTunk/cartSliceTunk";
+import { addGuestCartItem, hydrateGuestCart } from "@/redux/productsSliceTunk/guestCartSlice";
+
+export default function ProductDetailClient({ product }) {
+  const router = useRouter();
+  const dispatch = useDispatch();
+
+  const { user } = useSelector((state) => state.auth);
+  const { loading: cartLoading } = useSelector((state) => state.cart);
+
+  useEffect(() => {
+    dispatch(hydrateGuestCart());
+  }, [dispatch]);
+
+  useEffect(() => {
+    if (user?._id) {
+      dispatch(fetchCart());
+    }
+  }, [user, dispatch]);
+
+  const handleAddToCart = async () => {
+    if (!product) return;
+
+    if (product.stock <= 0) {
+      toast.error("Product out of stock");
+      return;
+    }
+
+    if (user?._id) {
+      try {
+        await dispatch(addCartItem({ productId: product.id, quantity: 1 })).unwrap();
+        toast.success("Product added to cart!");
+        dispatch(fetchCart());
+      } catch (err) {
+        toast.error(err || "Failed to add product");
+      }
+    } else {
+      dispatch(
+        addGuestCartItem({
+          productId: product.id,
+          name: product.name,
+          price: product.price,
+          image_url: getPrimaryImageUrl(product),
+          stock: product.stock,
+          quantity: 1,
+        })
+      );
+      toast.success("Added to cart!");
+    }
+  };
+
+  if (!product) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 text-center">
+        <div className="max-w-md mx-auto space-y-4">
+          <span className="text-4xl">❓</span>
+          <h2 className="text-2xl font-serif font-bold text-neutral-900">Product not found</h2>
+          <p className="text-sm text-neutral-500">We couldn't find the product you are looking for.</p>
+          <Link
+            href="/products"
+            className="inline-block px-5 py-2.5 bg-primary text-primary-foreground rounded-md text-sm font-medium hover:bg-primary/95 transition-colors"
+          >
+            Back to Shop
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 font-sans">
+      <div className="mb-8">
+        <Link
+          href="/products"
+          className="inline-flex items-center gap-1 text-xs uppercase tracking-wider font-semibold text-neutral-500 hover:text-neutral-900 transition-colors"
+        >
+          <ChevronLeft className="w-4 h-4" />
+          <span>Back to collection</span>
+        </Link>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-16">
+        <div className="w-full">
+          <ImageGallery images={getProductImages(product)} />
+        </div>
+
+        <div className="flex flex-col justify-center">
+          <span className="text-xs uppercase tracking-wider text-neutral-400 font-semibold">{product.category}</span>
+
+          <h1 className="text-3xl sm:text-4xl font-serif font-bold text-neutral-900 tracking-tight mt-2 leading-tight">
+            {product.name}
+          </h1>
+
+          <p className="text-2xl font-semibold text-primary mt-3">
+            Rs. {product.price?.toLocaleString()}
+          </p>
+
+          <div className="border-t border-b border-border/40 py-6 my-6 space-y-3">
+            <h2 className="text-xs uppercase tracking-wider text-neutral-400 font-semibold">Description</h2>
+            <p className="text-sm text-neutral-600 leading-relaxed">
+              {product.description || "No description provided for this item. Crafted with our signature premium elements."}
+            </p>
+          </div>
+
+          <div className="flex items-center gap-2 mb-8">
+            <span className="text-xs text-neutral-500">Availability:</span>
+            <span
+              className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${
+                product.stock > 0
+                  ? "bg-green-50 text-green-700 border border-green-200"
+                  : "bg-red-50 text-red-700 border border-red-200"
+              }`}
+            >
+              {product.stock > 0 ? `In Stock (${product.stock} left)` : "Out of Stock"}
+            </span>
+          </div>
+
+          <div className="space-y-6">
+            <div className="flex gap-4">
+              <button
+                onClick={handleAddToCart}
+                disabled={product.stock === 0 || cartLoading}
+                className="flex-1 bg-primary text-primary-foreground font-semibold py-3.5 rounded-md hover:bg-primary/95 disabled:opacity-50 disabled:cursor-not-allowed transition-all text-sm flex items-center justify-center gap-2 shadow-sm"
+              >
+                <ShoppingBag className="w-4 h-4" />
+                <span>{cartLoading ? "Adding to Cart..." : "Add to Cart"}</span>
+              </button>
+            </div>
+
+            <div className="bg-secondary/30 rounded-xl p-4 border border-border/20 text-xs text-neutral-500 space-y-2.5">
+              <div className="flex items-center gap-2">
+                <span className="text-green-600">✓</span>
+                <span>Free shipping on all orders over Rs. 3,000</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-green-600">✓</span>
+                <span>Hassle-free 30-day exchange window</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <ShieldCheck className="w-3.5 h-3.5 text-neutral-500" />
+                <span>100% Secure COD & EasyPaisa deposits</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
