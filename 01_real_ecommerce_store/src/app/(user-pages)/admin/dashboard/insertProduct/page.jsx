@@ -15,6 +15,7 @@ import {
 } from "@/redux/adminSliceTunk/adminProductRoleSliceTunk";
 import { getProductImages, getPrimaryImageUrl } from "@/lib/productImages";
 import NavbarProduct from "./NavbarProduct";
+import { categories } from "./index";
 import { toast } from "sonner";
 
 export default function AdminProductsPage() {
@@ -24,6 +25,7 @@ export default function AdminProductsPage() {
   const { message } = useSelector((state) => state.adminproduct);
 
   const [editingProductId, setEditingProductId] = useState(null);
+  const [isCustomCategory, setIsCustomCategory] = useState(false);
   const { total } = useSelector((state) => state.products);
   const [form, setForm] = useState({
     product_no: "",
@@ -98,6 +100,9 @@ export default function AdminProductsPage() {
   const startEdit = (product) => {
     setEditingProductId(product.id);
     const parsedImages = getProductImages(product);
+    setIsCustomCategory(
+      Boolean(product.category && !categories.some((c) => c.value === product.category))
+    );
     setForm({
       ...product,
       images: parsedImages,
@@ -107,6 +112,7 @@ export default function AdminProductsPage() {
 
   const cancelEdit = () => {
     setEditingProductId(null);
+    setIsCustomCategory(false);
     setForm({
       product_no: "",
       name: "",
@@ -115,6 +121,7 @@ export default function AdminProductsPage() {
       stock: "",
       description: "",
       image_url: "",
+      images: [],
     });
     dispatch(clearSelectedProduct());
   };
@@ -141,6 +148,7 @@ export default function AdminProductsPage() {
       dispatch(insertProduct({ productData: form }))
         .unwrap()
         .then(() => {
+          setIsCustomCategory(false);
           setForm({
             product_no: "",
             name: "",
@@ -197,11 +205,11 @@ export default function AdminProductsPage() {
             {editingProductId ? "Edit Product" : "Add Product"}
           </h2>
           <div className="flex flex-wrap gap-2 mb-3">
-            {["product_no", "name", "price", "category", "stock"].map(
+            {["product_no", "name", "price", "stock"].map(
               (field) => (
                 <input
                   key={field}
-                  type="text"
+                  type={field === "price" || field === "stock" || field === "product_no" ? "number" : "text"}
                   name={field}
                   placeholder={field.replace("_", " ")}
                   value={form[field]}
@@ -209,6 +217,53 @@ export default function AdminProductsPage() {
                   className="border p-2 rounded flex-1 min-w-[150px]"
                 />
               )
+            )}
+
+            {isCustomCategory ? (
+              <div className="flex gap-1 flex-1 min-w-[180px]">
+                <input
+                  type="text"
+                  name="category"
+                  placeholder="Enter custom category"
+                  value={form.category}
+                  onChange={handleChange}
+                  className="border p-2 rounded flex-1 min-w-[130px] bg-white"
+                  autoFocus
+                />
+                <button
+                  type="button"
+                  onClick={() => setIsCustomCategory(false)}
+                  className="text-xs text-blue-600 px-2 hover:underline whitespace-nowrap bg-white border rounded"
+                  title="Choose from existing categories"
+                >
+                  List
+                </button>
+              </div>
+            ) : (
+              <select
+                name="category"
+                value={form.category}
+                onChange={(e) => {
+                  if (e.target.value === "__custom__") {
+                    setIsCustomCategory(true);
+                    setForm({ ...form, category: "" });
+                  } else {
+                    handleChange(e);
+                  }
+                }}
+                className="border p-2 rounded flex-1 min-w-[180px] bg-white cursor-pointer"
+              >
+                <option value="">Select Category *</option>
+                {categories.map((cat) => (
+                  <option key={cat.value} value={cat.value}>
+                    {cat.label}
+                  </option>
+                ))}
+                {form.category && !categories.some((c) => c.value === form.category) && (
+                  <option value={form.category}>{form.category}</option>
+                )}
+                <option value="__custom__">+ Custom Category...</option>
+              </select>
             )}
           </div>
 
