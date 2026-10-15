@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { getPrimaryImageUrl } from "@/lib/productImages";
+import { calculateCartSummary } from "@/lib/deliveryCharge";
 import {
   fetchCart,
   addCartItem,
@@ -98,7 +99,7 @@ export default function CartPage() {
         <div className="space-y-2">
           <h2 className="text-2xl font-serif font-bold text-neutral-900">Your cart is empty</h2>
           <p className="text-sm text-neutral-500">
-            Looks like you haven't added anything to your cart yet. Explore our latest premium arrivals.
+            Looks like you have not added anything to your cart yet. Explore our latest premium arrivals.
           </p>
         </div>
         <Link
@@ -112,15 +113,8 @@ export default function CartPage() {
     );
   }
 
-  // Subtotal & Delivery Fee
-  const subTotal = items.reduce(
-    (sum, item) => sum + item.price * item.quantity,
-    0
-  );
-  const DELIVERY_FEE_PER_PRODUCT = 300;
-  const uniqueProductsCount = items ? new Set(items.map((item) => item.productId)).size : 0;
-  const deliveryFee = uniqueProductsCount * DELIVERY_FEE_PER_PRODUCT;
-  const orderTotal = subTotal + deliveryFee;
+  // Subtotal, delivery charge, and total amount are driven by unique products only.
+  const { subTotal, deliveryCharge, grandTotal, uniqueProductsCount } = calculateCartSummary(items);
 
   // Increase quantity
   const handleIncrease = async (item) => {
@@ -259,10 +253,10 @@ export default function CartPage() {
             
             <div className="flex justify-between text-neutral-500">
               <span>
-                Delivery Fee {uniqueProductsCount > 0 && `(${uniqueProductsCount} × Rs. ${DELIVERY_FEE_PER_PRODUCT})`}
+                Delivery Charge {uniqueProductsCount > 0 && `(${uniqueProductsCount} unique products)`}
               </span>
               <span className="font-semibold text-neutral-900">
-                {deliveryFee > 0 ? `Rs. ${deliveryFee.toLocaleString()}` : "Free"}
+                {deliveryCharge > 0 ? `Rs. ${deliveryCharge.toLocaleString()}` : "Free"}
               </span>
             </div>
 
@@ -270,7 +264,7 @@ export default function CartPage() {
 
             <div className="flex justify-between text-base font-bold text-neutral-900 pt-1">
               <span>Total</span>
-              <span>Rs. {orderTotal?.toLocaleString()}</span>
+              <span>Rs. {grandTotal?.toLocaleString()}</span>
             </div>
           </div>
 

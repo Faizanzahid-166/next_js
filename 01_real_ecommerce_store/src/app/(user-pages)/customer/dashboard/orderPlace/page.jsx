@@ -204,12 +204,7 @@ function CheckoutContent() {
     );
   }
 
-  const DELIVERY_FEE_PER_PRODUCT = 300;
-  // Calculate Subtotal for the preview
-  const subTotal = items?.reduce((sum, item) => sum + item.price * item.quantity, 0) || 0;
-  const uniqueProductsCount = items ? new Set(items.map((item) => item.productId)).size : 0;
-  const deliveryFee = uniqueProductsCount * DELIVERY_FEE_PER_PRODUCT;
-  const totalAmount = subTotal + deliveryFee;
+  const { subTotal, deliveryCharge: deliveryFee, grandTotal: totalAmount, uniqueProductsCount } = calculateCartSummary(items || []);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 font-sans min-h-[calc(100vh-20rem)]">
@@ -518,7 +513,7 @@ function CheckoutContent() {
                           Qty {item.quantity} × Rs. {item.price?.toLocaleString()}
                         </span>
                         <span className="inline-flex items-center text-[10px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200/70 rounded px-1.5 py-0.5">
-                          +Rs. 300 Delivery
+                          +Rs. {calculateCartSummary([item]).deliveryCharge} Delivery
                         </span>
                       </div>
                     </div>
@@ -542,10 +537,10 @@ function CheckoutContent() {
             
             <div className="flex justify-between text-neutral-500">
               <span className="flex items-center gap-1.5">
-                <span>Delivery Fee</span>
+                <span>Delivery Charge</span>
                 {uniqueProductsCount > 0 && (
                   <span className="text-[11px] text-neutral-400 font-normal">
-                    ({uniqueProductsCount} × Rs. {DELIVERY_FEE_PER_PRODUCT})
+                    ({uniqueProductsCount} unique products)
                   </span>
                 )}
               </span>

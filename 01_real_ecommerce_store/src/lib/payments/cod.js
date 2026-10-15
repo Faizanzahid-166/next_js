@@ -2,8 +2,8 @@
 export async function handleCODPayment(order) {
   if (!order) throw new Error("Order is required");
 
-  // Use the delivery charge from order schema, fallback to 300 if not set
-  const deliveryFee = order.pricing?.deliveryCharge || 300;
+  // Use the delivery charge captured by the server; never guess a client-side value.
+  const deliveryFee = Number(order?.pricing?.deliveryCharge || 0);
 
   // Make sure delivery fee > 0
   if (deliveryFee <= 0) {

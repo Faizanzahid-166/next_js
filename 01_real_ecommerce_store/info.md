@@ -132,3 +132,5 @@
 - 500 concurrent users are not reliable without architecture and caching changes.
 - 1000 concurrent users are not supported in current form.
 - 5000+ users would need CDN, DB scaling, and API hardening.
+
+

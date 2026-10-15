@@ -31,12 +31,11 @@ import {
   UserPlus,
   Trash2,
 } from "lucide-react";
+import { calculateCartSummary } from "@/lib/deliveryCharge";
 
 // ---------------------------------------------------------------------------
 // Constants
 // ---------------------------------------------------------------------------
-
-const DELIVERY_FEE_PER_PRODUCT = 300;
 
 const emptyAddress = {
   fullName: "",
@@ -313,26 +312,17 @@ export default function CheckoutPage() {
     );
   }
 
-  // Subtotal, Delivery Fee & Total Amount
+  // Subtotal, delivery charge, and total amount are recalculated from unique products only.
   const displayItems =
     cartItems && cartItems.length > 0
       ? cartItems
       : order?.items || lastOrderedItems;
 
-  const subTotal =
-    displayItems?.reduce((sum, item) => sum + item.price * item.quantity, 0) ||
-    order?.subTotal ||
-    0;
-
-  const uniqueProductsCount = displayItems
-    ? new Set(displayItems.map((item) => item.productId)).size
-    : 0;
-
-  const deliveryFee =
-    order?.deliveryFee ?? uniqueProductsCount * DELIVERY_FEE_PER_PRODUCT;
-
-  const totalAmount =
-    order?.totalAmount ?? subTotal + deliveryFee;
+  const currentSummary = calculateCartSummary(displayItems || []);
+  const uniqueProductsCount = currentSummary.uniqueProductsCount;
+  const subTotal = order?.subTotal ?? currentSummary.subTotal;
+  const deliveryFee = order?.deliveryFee ?? currentSummary.deliveryCharge;
+  const totalAmount = order?.totalAmount ?? currentSummary.grandTotal;
 
   // ── Render ────────────────────────────────────────────────────────────────
 
@@ -758,7 +748,7 @@ export default function CheckoutPage() {
                           Qty {item.quantity} × Rs. {item.price?.toLocaleString()}
                         </span>
                         <span className="inline-flex items-center text-[10px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200/70 rounded px-1.5 py-0.5">
-                          +Rs. 300 Delivery
+                          +Rs. {calculateCartSummary([item]).deliveryCharge} Delivery
                         </span>
                       </div>
                     </div>
@@ -786,10 +776,10 @@ export default function CheckoutPage() {
 
             <div className="flex justify-between text-neutral-500">
               <span className="flex items-center gap-1.5">
-                <span>Delivery Fee</span>
+                <span>Delivery Charge</span>
                 {uniqueProductsCount > 0 && (
                   <span className="text-[11px] text-neutral-400 font-normal">
-                    ({uniqueProductsCount} × Rs. {DELIVERY_FEE_PER_PRODUCT})
+                    ({uniqueProductsCount} unique products)
                   </span>
                 )}
               </span>

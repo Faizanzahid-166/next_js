@@ -2,9 +2,8 @@ import { supabaseServer } from "@/lib/supabase";
 import { getUserFromCookies } from "@/lib/getUserFromRequest";
 import { successResponse, errorResponse } from "@/lib/response";
 import { handleCODPayment } from "@/lib/payments/cod";
+import { calculateCartSummary } from "@/lib/deliveryCharge";
 import { z } from "zod";
-
-const DELIVERY_FEE_PER_PRODUCT = 300;
 
 // ---------------------------------------------------------------------------
 // Validation schemas
@@ -112,10 +111,7 @@ export async function POST(req) {
         image_url: item["03_ecommerce_store_products"]?.image_url || "",
       }));
 
-      const uniqueProductCount = new Set(items.map((item) => item.productId)).size;
-      const deliveryFee = uniqueProductCount * DELIVERY_FEE_PER_PRODUCT;
-      const subTotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
-      const totalAmount = subTotal + deliveryFee;
+      const { subTotal, deliveryCharge: deliveryFee, grandTotal: totalAmount } = calculateCartSummary(items);
 
       return await createOrderAndRespond({
         userId: user._id.toString(),
@@ -176,13 +172,7 @@ export async function POST(req) {
       });
     }
 
-    const uniqueProductCount = new Set(resolvedItems.map((item) => item.productId)).size;
-    const deliveryFee = uniqueProductCount * DELIVERY_FEE_PER_PRODUCT;
-    const subTotal = resolvedItems.reduce(
-      (sum, item) => sum + item.price * item.quantity,
-      0
-    );
-    const totalAmount = subTotal + deliveryFee;
+    const { subTotal, deliveryCharge: deliveryFee, grandTotal: totalAmount } = calculateCartSummary(resolvedItems);
 
     return await createOrderAndRespond({
       userId: null, // guest: no user account
