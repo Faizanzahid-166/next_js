@@ -323,6 +323,8 @@ export default function CheckoutPage() {
   const subTotal = order?.subTotal ?? currentSummary.subTotal;
   const deliveryFee = order?.deliveryFee ?? currentSummary.deliveryCharge;
   const totalAmount = order?.totalAmount ?? currentSummary.grandTotal;
+  const discountAmount = Number(order?.discount ?? 0);
+  const additionalProductsCount = Math.max(uniqueProductsCount - 2, 0);
   const deliveryBreakdownText = formatDeliveryChargeBreakdown(displayItems || []);
 
   // ── Render ────────────────────────────────────────────────────────────────
@@ -769,38 +771,59 @@ export default function CheckoutPage() {
           {/* Pricing breakdown */}
           <div className="border-t border-border/40 pt-4 space-y-3 text-sm">
             <div className="flex justify-between text-neutral-500">
-              <span>Subtotal</span>
+              <span>Products Subtotal</span>
               <span className="font-semibold text-neutral-950">
                 Rs. {subTotal?.toLocaleString()}
               </span>
             </div>
 
-            <div className="space-y-1.5 text-neutral-500">
-              <div className="flex justify-between">
-                <span className="flex items-center gap-1.5">
-                  <span>Delivery Charge</span>
-                  {uniqueProductsCount > 0 && (
-                    <span className="text-[11px] text-neutral-400 font-normal">
-                      ({uniqueProductsCount} unique products)
-                    </span>
-                  )}
-                </span>
+            {uniqueProductsCount >= 1 && (
+              <div className="flex justify-between text-neutral-500">
+                <span>Delivery — First Product</span>
+                <span className="font-semibold text-neutral-950">Rs. 250</span>
+              </div>
+            )}
+
+            {uniqueProductsCount >= 2 && (
+              <div className="flex justify-between text-neutral-500">
+                <span>Delivery — Second Product</span>
+                <span className="font-semibold text-neutral-950">Rs. 110</span>
+              </div>
+            )}
+
+            {additionalProductsCount > 0 && (
+              <div className="flex justify-between text-neutral-500">
+                <span>Delivery — Additional Products</span>
                 <span className="font-semibold text-neutral-950">
-                  {deliveryFee > 0 ? `Rs. ${deliveryFee.toLocaleString()}` : "Free"}
+                  Rs. {Number(60).toLocaleString()} × {additionalProductsCount}
                 </span>
               </div>
+            )}
 
-              <p className="text-[11px] text-neutral-500 leading-relaxed break-words">
-                {deliveryBreakdownText}
-              </p>
+            <div className="flex justify-between text-neutral-500">
+              <span>Total Delivery Charges</span>
+              <span className="font-semibold text-neutral-950">
+                Rs. {deliveryFee > 0 ? deliveryFee.toLocaleString() : 0}
+              </span>
+            </div>
+
+            <div className="flex justify-between text-neutral-500">
+              <span>Discount</span>
+              <span className="font-semibold text-neutral-950">
+                − Rs. {discountAmount > 0 ? discountAmount.toLocaleString() : 0}
+              </span>
             </div>
 
             <div className="border-t border-border/40 my-3" />
 
             <div className="flex justify-between text-base font-bold text-neutral-900 pt-1">
-              <span>Total Amount</span>
+              <span>Grand Total</span>
               <span>Rs. {totalAmount?.toLocaleString()}</span>
             </div>
+
+            <p className="text-[11px] text-neutral-500 leading-relaxed break-words">
+              {deliveryBreakdownText}
+            </p>
 
             {/* COD Payment Split */}
             {paymentMethod === "COD" && totalAmount > 0 && (

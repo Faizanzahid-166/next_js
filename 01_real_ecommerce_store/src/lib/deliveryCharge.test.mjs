@@ -42,12 +42,19 @@ test('removing products and empty cart recalc to zero', () => {
 });
 
 test('delivery breakdown lists each unique product charge in text form', () => {
-  assert.deepEqual(getDeliveryChargeBreakdown([{ productId: 'p1' }, { productId: 'p2' }, { productId: 'p3' }]), [
-    { label: 'First product delivery is', amount: 250 },
-    { label: 'Second product delivery is', amount: 110 },
-    { label: '3th product delivery is', amount: 60 },
-  ]);
+  assert.deepEqual(getDeliveryChargeBreakdown([{ productId: 'p1' }, { productId: 'p2' }, { productId: 'p3' }]), {
+    firstProductCharge: 250,
+    secondProductCharge: 110,
+    additionalProductsCount: 1,
+    additionalProductsCharge: 60,
+    totalDeliveryCharge: 420,
+    items: [
+      { label: 'Delivery — First Product', amount: 250, quantityLabel: 'Rs. 250' },
+      { label: 'Delivery — Second Product', amount: 110, quantityLabel: 'Rs. 110' },
+      { label: 'Delivery — Additional Products', amount: 60, quantityLabel: 'Rs. 60 × 1' },
+    ],
+  });
 
-  assert.equal(formatDeliveryChargeBreakdown([{ productId: 'p1' }, { productId: 'p2' }]), 'First product delivery is Rs. 250, Second product delivery is Rs. 110');
+  assert.equal(formatDeliveryChargeBreakdown([{ productId: 'p1' }, { productId: 'p2' }]), 'Delivery — First Product: Rs. 250 • Delivery — Second Product: Rs. 110');
   assert.equal(formatDeliveryChargeBreakdown([]), 'Free delivery');
 });

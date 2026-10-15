@@ -35,29 +35,57 @@ export function calculateDeliveryCharge(items = []) {
 export function getDeliveryChargeBreakdown(items = []) {
   const uniqueProductCount = getCartUniqueProductCount(items);
 
-  if (uniqueProductCount === 0) return [];
-
-  const breakdown = [{ label: 'First product delivery is', amount: DELIVERY_CHARGE_FIRST }];
-
-  if (uniqueProductCount >= 2) {
-    breakdown.push({ label: 'Second product delivery is', amount: DELIVERY_CHARGE_SECOND });
+  if (uniqueProductCount === 0) {
+    return {
+      firstProductCharge: 0,
+      secondProductCharge: 0,
+      additionalProductsCount: 0,
+      additionalProductsCharge: 0,
+      totalDeliveryCharge: 0,
+      items: [],
+    };
   }
 
-  for (let index = 3; index <= uniqueProductCount; index += 1) {
-    breakdown.push({ label: `${index}th product delivery is`, amount: DELIVERY_CHARGE_EXTRA });
-  }
+  const additionalProductsCount = Math.max(uniqueProductCount - 2, 0);
+  const firstProductCharge = DELIVERY_CHARGE_FIRST;
+  const secondProductCharge = uniqueProductCount >= 2 ? DELIVERY_CHARGE_SECOND : 0;
+  const additionalProductsCharge = additionalProductsCount * DELIVERY_CHARGE_EXTRA;
+  const totalDeliveryCharge = calculateDeliveryCharge(items);
 
-  return breakdown;
+  const itemsBreakdown = [
+    ...(uniqueProductCount >= 1
+      ? [{ label: 'Delivery — First Product', amount: firstProductCharge, quantityLabel: 'Rs. 250' }]
+      : []),
+    ...(uniqueProductCount >= 2
+      ? [{ label: 'Delivery — Second Product', amount: secondProductCharge, quantityLabel: 'Rs. 110' }]
+      : []),
+    ...(additionalProductsCount > 0
+      ? [{
+          label: 'Delivery — Additional Products',
+          amount: additionalProductsCharge,
+          quantityLabel: `Rs. ${DELIVERY_CHARGE_EXTRA} × ${additionalProductsCount}`,
+        }]
+      : []),
+  ];
+
+  return {
+    firstProductCharge,
+    secondProductCharge,
+    additionalProductsCount,
+    additionalProductsCharge,
+    totalDeliveryCharge,
+    items: itemsBreakdown,
+  };
 }
 
 export function formatDeliveryChargeBreakdown(items = []) {
   const breakdown = getDeliveryChargeBreakdown(items);
 
-  if (breakdown.length === 0) return 'Free delivery';
+  if (!breakdown.items || breakdown.items.length === 0) return 'Free delivery';
 
-  return breakdown
-    .map(({ label, amount }) => `${label} Rs. ${amount}`)
-    .join(', ');
+  return breakdown.items
+    .map(({ label, quantityLabel }) => `${label}: ${quantityLabel}`)
+    .join(' • ');
 }
 
 export function calculateCartSummary(items = [], discounts = 0) {
@@ -71,6 +99,7 @@ export function calculateCartSummary(items = [], discounts = 0) {
     }, 0)
   );
   const deliveryCharge = calculateDeliveryCharge(cartItems);
+  const deliveryBreakdown = getDeliveryChargeBreakdown(cartItems);
   const grandTotal = Math.max(0, Math.round(subTotal + deliveryCharge - Number(discounts || 0)));
 
   return {
@@ -78,5 +107,6 @@ export function calculateCartSummary(items = [], discounts = 0) {
     subTotal,
     deliveryCharge,
     grandTotal,
+    deliveryBreakdown,
   };
 }
