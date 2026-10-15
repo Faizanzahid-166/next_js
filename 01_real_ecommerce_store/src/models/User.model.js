@@ -10,8 +10,11 @@ const UserSchema = new mongoose.Schema({
   emailVerified: { type: Boolean, default: false },
   otp: {
     code: String,
-    expiresAt: Date
-  }
+    expiresAt: Date,
+    usedAt: Date,
+  },
+  otpAttempts: { type: Number, default: 0 },
+  otpLastSentAt: { type: Date, default: null },
 }, { timestamps: true });
 
 export default mongoose.models.User || mongoose.model("User", UserSchema);

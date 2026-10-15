@@ -40,6 +40,12 @@ export default function VerifyOTPClient({ email }) {
       });
       const data = await res.json();
       if (!res.ok) {
+        if (data.code === 'EMAIL_ALREADY_VERIFIED') {
+          toast.info('This email is already verified. Redirecting to sign in...');
+          router.push('/login');
+          return;
+        }
+
         if (data.message?.toLowerCase().includes('expired')) setOtpExpired(true);
         toast.error(data.message || 'Verification failed');
         return;
@@ -68,10 +74,15 @@ export default function VerifyOTPClient({ email }) {
       });
       const data = await res.json();
       if (!res.ok) {
+        if (data.code === 'EMAIL_ALREADY_VERIFIED') {
+          toast.info('This email is already verified. Redirecting to sign in...');
+          router.push('/login');
+          return;
+        }
         toast.error(data.message || 'Failed to resend OTP');
         return;
       }
-      toast.success('New OTP sent to your email!');
+      toast.success(data.message || 'New OTP sent to your email!');
       setOtpExpired(false);
 
       // Countdown timer

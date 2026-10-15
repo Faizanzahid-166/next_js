@@ -14,10 +14,14 @@ export function cacheHeaders({ publicCache = true, maxAge = 60, sMaxAge = 60, st
 }
 
 export function successResponse(message, data = null, status = 200, extraHeaders = {}) {
-  return jsonResponse({ status: "success", message, data }, status, extraHeaders);
+  const payload = { status: "success", message };
+  if (data !== null && data !== undefined) payload.data = data;
+  return jsonResponse(payload, status, extraHeaders);
 }
 
 
-export function errorResponse(message = "Something went wrong", status = 400, extraHeaders = {}) {
-  return jsonResponse({ status: "error", message }, status, extraHeaders);
+export function errorResponse(message = "Something went wrong", status = 400, extraHeaders = {}, code = null) {
+  const payload = { status: "error", message };
+  if (code) payload.code = code;
+  return jsonResponse(payload, status, extraHeaders);
 }
