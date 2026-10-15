@@ -44,12 +44,17 @@ export default function VerifyOTPPage() {
       });
       const data = await res.json();
       if (!res.ok) {
+        if (data.code === 'EMAIL_ALREADY_VERIFIED') {
+          toast.info('This email is already verified. Redirecting to sign in...');
+          router.replace('/login');
+          return;
+        }
         if (data.message?.toLowerCase().includes('expired')) setOtpExpired(true);
         toast.error(data.message || 'Verification failed');
         return;
       }
       toast.success('Email verified successfully!');
-      router.push('/login');
+      router.replace('/login');
     } catch (err) {
       console.error(err);
       toast.error('Network error');
@@ -68,10 +73,15 @@ export default function VerifyOTPPage() {
       });
       const data = await res.json();
       if (!res.ok) {
+        if (data.code === 'EMAIL_ALREADY_VERIFIED') {
+          toast.info('This email is already verified. Redirecting to sign in...');
+          router.replace('/login');
+          return;
+        }
         toast.error(data.message || 'Failed to resend OTP');
         return;
       }
-      toast.success('New OTP sent to your email!');
+      toast.success(data.message || 'New OTP sent to your email!');
       setOtpExpired(false);
     } catch (err) {
       console.error(err);

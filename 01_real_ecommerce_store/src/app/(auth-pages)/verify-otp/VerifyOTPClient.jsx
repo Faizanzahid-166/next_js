@@ -42,7 +42,7 @@ export default function VerifyOTPClient({ email }) {
       if (!res.ok) {
         if (data.code === 'EMAIL_ALREADY_VERIFIED') {
           toast.info('This email is already verified. Redirecting to sign in...');
-          router.push('/login');
+          router.replace('/login');
           return;
         }
 
@@ -51,7 +51,7 @@ export default function VerifyOTPClient({ email }) {
         return;
       }
       toast.success('Email verified successfully!');
-      router.push('/login');
+      router.replace('/login');
     } catch (err) {
       console.error(err);
       toast.error('Network error. Please try again.');
@@ -76,7 +76,7 @@ export default function VerifyOTPClient({ email }) {
       if (!res.ok) {
         if (data.code === 'EMAIL_ALREADY_VERIFIED') {
           toast.info('This email is already verified. Redirecting to sign in...');
-          router.push('/login');
+          router.replace('/login');
           return;
         }
         toast.error(data.message || 'Failed to resend OTP');
