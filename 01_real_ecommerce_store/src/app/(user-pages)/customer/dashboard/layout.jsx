@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useSelector, useDispatch } from "react-redux";
-import { logoutUser, fetchUser } from "@/redux/authSliceTunk/authSlice";
+import { logoutUser } from "@/redux/authSliceTunk/authSlice";
 import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import {
@@ -31,18 +31,13 @@ export default function DashboardLayout({ children }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
-    if (loading) return;
-    if (!user) {
-      dispatch(fetchUser());
-      return;
-    }
-    if (!pathname) return;
+    if (loading || !user || !pathname) return;
     if (user.role === "admin" && !pathname.startsWith("/admin")) {
       router.replace("/admin/dashboard");
     } else if (user.role === "customer" && !pathname.startsWith("/customer")) {
       router.replace("/customer/dashboard");
     }
-  }, [user, loading, pathname, dispatch, router]);
+  }, [user, loading, pathname, router]);
 
   if (loading || !user) {
     return (

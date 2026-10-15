@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect } from "react";
-import { useRouter } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "sonner";
 import Link from "next/link";
@@ -13,7 +12,6 @@ import { addCartItem, fetchCart } from "@/redux/productsSliceTunk/cartSliceTunk"
 import { addGuestCartItem, hydrateGuestCart } from "@/redux/productsSliceTunk/guestCartSlice";
 
 export default function ProductDetailClient({ product }) {
-  const router = useRouter();
   const dispatch = useDispatch();
 
   const { user } = useSelector((state) => state.auth);
@@ -41,9 +39,8 @@ export default function ProductDetailClient({ product }) {
       try {
         await dispatch(addCartItem({ productId: product.id, quantity: 1 })).unwrap();
         toast.success("Product added to cart!");
-        dispatch(fetchCart());
       } catch (err) {
-        toast.error(err || "Failed to add product");
+        toast.error(err?.message || err || "Failed to add product");
       }
     } else {
       dispatch(
@@ -66,7 +63,7 @@ export default function ProductDetailClient({ product }) {
         <div className="max-w-md mx-auto space-y-4">
           <span className="text-4xl">❓</span>
           <h2 className="text-2xl font-serif font-bold text-neutral-900">Product not found</h2>
-          <p className="text-sm text-neutral-500">We couldn't find the product you are looking for.</p>
+          <p className="text-sm text-neutral-500">We couldn&apos;t find the product you are looking for.</p>
           <Link
             href="/products"
             className="inline-block px-5 py-2.5 bg-primary text-primary-foreground rounded-md text-sm font-medium hover:bg-primary/95 transition-colors"

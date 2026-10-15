@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
 import axios from "axios";
 import Link from "next/link";
@@ -12,7 +11,6 @@ import { getPrimaryImageUrl } from "@/lib/productImages";
 import ImageGallery from "@/components/product/ImageGallery";
 
 export default function ProductDetail({ productId }) {
-  const router = useRouter();
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.auth);
   const { loading: cartLoading } = useSelector((state) => state.cart);
@@ -51,9 +49,8 @@ export default function ProductDetail({ productId }) {
           addCartItem({ productId: product.id || product._id, quantity: 1 })
         ).unwrap();
         toast.success("Added to cart!");
-        dispatch(fetchCart());
-      } catch {
-        toast.error("Failed to add product");
+      } catch (error) {
+        toast.error(error?.message || error || "Failed to add product");
       }
     } else {
       // ── Guest: add to local cart (no backend call) ──

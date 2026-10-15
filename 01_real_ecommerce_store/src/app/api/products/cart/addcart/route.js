@@ -1,66 +1,49 @@
 import { supabaseServer } from "@/lib/supabase";
 import { successResponse, errorResponse } from "@/lib/response";
 import { getUserFromCookies } from "@/lib/getUserFromRequest";
+import { calculateNextCartQuantity } from "@/lib/cartQuantity.mjs";
 
 export async function POST(req) {
   try {
-    console.log("➡️ ADD TO CART REQUEST RECEIVED");
-
-    // 🔐 1️⃣ Get authenticated user
     const user = await getUserFromCookies(req);
-    console.log("👤 User:", user);
-
     if (!user) {
-      console.error("❌ Unauthorized user");
       return errorResponse("Unauthorized", 401);
     }
 
     const body = await req.json();
-    console.log("📦 Request body:", body);
-
     const { productId, quantity = 1 } = body;
     if (!productId) {
-      console.error("❌ Missing productId");
       return errorResponse("Missing productId", 400);
     }
 
-    const userId = user._id.toString();
-    console.log("🆔 userId:", userId);
-    console.log("🛒 productId:", productId, "type:", typeof productId);
+    const delta = Number(quantity);
+    if (!Number.isFinite(delta) || delta === 0) {
+      return errorResponse("Quantity must be a non-zero number", 400);
+    }
 
-    // 2️⃣ Check product & stock
+    const userId = user._id.toString();
+
     const { data: product, error: productError } = await supabaseServer
       .from("03_ecommerce_store_products")
       .select("id, stock")
       .eq("id", productId)
       .single();
 
-    console.log("📦 Product lookup:", product);
-    console.log("⚠️ Product error:", productError);
-
     if (productError || !product) {
-      console.error("❌ Product not found");
       return errorResponse("Product not found", 404);
     }
 
-    if (quantity > product.stock) {
-      console.error("❌ Not enough stock");
-      return errorResponse("Not enough stock", 400);
-    }
-
-    // 3️⃣ Fetch or create the user's cart
     let { data: cart, error: cartFetchError } = await supabaseServer
       .from("03_carts")
       .select("*")
       .eq("user_id", userId)
       .maybeSingle();
 
-    console.log("🛒 Existing cart:", cart);
-    console.log("⚠️ Cart fetch error:", cartFetchError);
+    if (cartFetchError) {
+      return errorResponse(cartFetchError.message, 500);
+    }
 
     if (!cart) {
-      console.log("➕ Creating new cart");
-
       const { data: newCart, error: cartError } = await supabaseServer
         .from("03_carts")
         .insert({ user_id: userId })
@@ -68,123 +51,103 @@ export async function POST(req) {
         .single();
 
       if (cartError) {
-        console.error("❌ Cart create error:", cartError);
         return errorResponse(cartError.message, 500);
       }
 
       cart = newCart;
-      console.log("✅ New cart created:", cart);
     }
 
     const cartId = cart.id;
-    console.log("🆔 cartId:", cartId);
+    const { data: existingItem, error: existingItemError } = await supabaseServer
+      .from("03_cart_items")
+      .select("*")
+      .eq("cart_id", cartId)
+      .eq("product_id", productId)
+      .maybeSingle();
 
-    // 4️⃣ Check existing cart item
-    const { data: existingItem, error: existingItemError } =
-      await supabaseServer
-        .from("03_cart_items")
-        .select("*")
-        .eq("cart_id", cartId)
-        .eq("product_id", productId)
-        .maybeSingle();
-
-    console.log("📄 Existing cart item:", existingItem);
-    console.log("⚠️ Existing item error:", existingItemError);
-
-    // 5️⃣ Remove item if quantity <= 0
-    if (quantity <= 0 && existingItem) {
-      console.log("🗑 Removing item from cart");
-
-      await supabaseServer
-        .from("03_cart_items")
-        .delete()
-        .eq("id", existingItem.id);
-
-      return successResponse("Item removed from cart", {
-        cartId,
-        productId,
-        quantity: 0,
-      });
+    if (existingItemError) {
+      return errorResponse(existingItemError.message, 500);
     }
 
-    // 6️⃣ Update or insert
     if (existingItem) {
-      console.log("✏️ Updating cart item quantity");
+      const nextQuantity = calculateNextCartQuantity({
+        currentQuantity: existingItem.quantity,
+        delta,
+        stock: product.stock,
+      });
+
+      if (nextQuantity <= 0) {
+        await supabaseServer.from("03_cart_items").delete().eq("id", existingItem.id);
+        return successResponse("Item removed from cart", {
+          cartId,
+          productId,
+          quantity: 0,
+          items: [],
+        });
+      }
 
       const { error } = await supabaseServer
         .from("03_cart_items")
-        .update({ quantity })
+        .update({ quantity: nextQuantity })
         .eq("id", existingItem.id);
 
       if (error) {
-        console.error("❌ Update error:", error);
         return errorResponse(error.message, 500);
       }
     } else {
-      console.log("➕ Inserting new cart item", {
-        cartId,
-        userId,
-        productId,
-        quantity,
-      });
+      const nextQuantity = calculateNextCartQuantity({ currentQuantity: 0, delta, stock: product.stock });
+      if (nextQuantity <= 0) {
+        return errorResponse("Not enough stock", 400);
+      }
 
       const { error } = await supabaseServer.from("03_cart_items").insert({
         cart_id: cartId,
         product_id: productId,
-        quantity,
+        quantity: nextQuantity,
         user_id: userId,
       });
 
       if (error) {
-        console.error("❌ Insert error:", error);
         return errorResponse(error.message, 500);
       }
     }
 
-    // 7️⃣ Fetch updated cart items
-    const { data: cartItems, error: cartItemsError } =
-      await supabaseServer
-        .from("03_cart_items")
-        .select(`
+    const { data: cartItems, error: cartItemsError } = await supabaseServer
+      .from("03_cart_items")
+      .select(`
+        id,
+        product_id,
+        quantity,
+        03_ecommerce_store_products (
           id,
-          product_id,
-          quantity,
-          03_ecommerce_store_products (
-            id,
-            name,
-            price,
-            stock,
-            image_url
-          )
-        `)
-        .eq("cart_id", cartId);
-
-    console.log("🛍 Cart items:", cartItems);
-    console.log("⚠️ Cart items error:", cartItemsError);
+          name,
+          price,
+          stock,
+          image_url
+        )
+      `)
+      .eq("cart_id", cartId);
 
     if (cartItemsError) {
       return errorResponse(cartItemsError.message, 500);
     }
 
-    // 8️⃣ Return full cart
-    const items = cartItems.map(item => {
-      const product = item["03_ecommerce_store_products"]; // ✅ FIXED NAME
+    const items = (cartItems || []).map((item) => {
+      const productInfo = item["03_ecommerce_store_products"];
       return {
         id: item.id,
         productId: item.product_id,
         quantity: item.quantity,
-        name: product?.name,
-        price: product?.price,
-        stock: product?.stock,
-        image_url: product?.image_url,
+        name: productInfo?.name,
+        price: productInfo?.price,
+        stock: productInfo?.stock,
+        image_url: productInfo?.image_url,
       };
     });
 
-    console.log("✅ FINAL CART RESPONSE:", items);
-
     return successResponse("Cart updated", { cartId, items });
   } catch (err) {
-    console.error("🔥 CART ERROR:", err);
+    console.error("CART ERROR:", err);
     return errorResponse("Failed to update cart", 500);
   }
 }

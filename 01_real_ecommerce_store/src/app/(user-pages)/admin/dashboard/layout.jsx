@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
-import { logoutUser, fetchUser } from "@/redux/authSliceTunk/authSlice";
+import { logoutUser } from "@/redux/authSliceTunk/authSlice";
 import {
   LayoutDashboard,
   PackagePlus,
@@ -32,16 +32,8 @@ export default function AdminDashboardLayout({ children }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
-    if (!user) {
-      dispatch(fetchUser());
-    }
-  }, [dispatch, user]);
-
-  useEffect(() => {
-    if (!loading && user) {
-      if (user.role !== "admin") {
-        router.replace("/login");
-      }
+    if (!loading && user && user.role !== "admin") {
+      router.replace("/login");
     }
   }, [user, loading, router]);
 

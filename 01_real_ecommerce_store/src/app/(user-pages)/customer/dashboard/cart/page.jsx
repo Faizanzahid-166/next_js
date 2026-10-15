@@ -116,28 +116,28 @@ export default function CartPage() {
   // Subtotal, delivery charge, and total amount are driven by unique products only.
   const { subTotal, deliveryCharge, grandTotal, uniqueProductsCount } = calculateCartSummary(items);
 
-  // Increase quantity
+  // Increase quantity by one item, without resetting the cart to a full refetch loop.
   const handleIncrease = async (item) => {
     if (item.quantity >= item.stock) {
       toast.error("Not enough stock");
       return;
     }
     try {
-      await dispatch(addCartItem({ productId: item.productId, quantity: item.quantity + 1 })).unwrap();
-      dispatch(fetchCart());
+      await dispatch(addCartItem({ productId: item.productId, quantity: 1 })).unwrap();
     } catch (err) {
-      toast.error(err);
+      toast.error(err?.message || err || "Could not update quantity");
     }
   };
 
-  // Decrease quantity
+  // Decrease quantity by one item. If it reaches zero, the server removes it.
   const handleDecrease = async (item) => {
-    const newQty = item.quantity - 1;
+    if (item.quantity <= 1) {
+      return;
+    }
     try {
-      await dispatch(addCartItem({ productId: item.productId, quantity: newQty })).unwrap();
-      dispatch(fetchCart());
+      await dispatch(addCartItem({ productId: item.productId, quantity: -1 })).unwrap();
     } catch (err) {
-      toast.error(err);
+      toast.error(err?.message || err || "Could not update quantity");
     }
   };
 

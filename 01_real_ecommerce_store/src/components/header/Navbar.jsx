@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect } from "react";
-import { logoutUser, fetchUser } from "@/redux/authSliceTunk/authSlice";
+import { logoutUser } from "@/redux/authSliceTunk/authSlice";
 import { fetchCart } from "@/redux/productsSliceTunk/cartSliceTunk";
 import { hydrateGuestCart } from "@/redux/productsSliceTunk/guestCartSlice";
 import MobileMenu from "./MobileMenu";
@@ -16,8 +16,7 @@ export default function Navbar() {
   const { items: guestItems } = useSelector((state) => state.guestCart || { items: [] });
 
   useEffect(() => {
-    dispatch(fetchUser());
-    dispatch(hydrateGuestCart()); // restore guest cart from localStorage on every page load
+    dispatch(hydrateGuestCart());
   }, [dispatch]);
 
   // Fetch DB cart when user is authenticated customer
