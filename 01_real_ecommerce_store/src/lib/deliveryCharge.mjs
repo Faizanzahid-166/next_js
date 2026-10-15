@@ -32,6 +32,34 @@ export function calculateDeliveryCharge(items = []) {
   return DELIVERY_CHARGE_FIRST + DELIVERY_CHARGE_SECOND + Math.max(0, uniqueProductCount - 2) * DELIVERY_CHARGE_EXTRA;
 }
 
+export function getDeliveryChargeBreakdown(items = []) {
+  const uniqueProductCount = getCartUniqueProductCount(items);
+
+  if (uniqueProductCount === 0) return [];
+
+  const breakdown = [{ label: 'First product delivery is', amount: DELIVERY_CHARGE_FIRST }];
+
+  if (uniqueProductCount >= 2) {
+    breakdown.push({ label: 'Second product delivery is', amount: DELIVERY_CHARGE_SECOND });
+  }
+
+  for (let index = 3; index <= uniqueProductCount; index += 1) {
+    breakdown.push({ label: `${index}th product delivery is`, amount: DELIVERY_CHARGE_EXTRA });
+  }
+
+  return breakdown;
+}
+
+export function formatDeliveryChargeBreakdown(items = []) {
+  const breakdown = getDeliveryChargeBreakdown(items);
+
+  if (breakdown.length === 0) return 'Free delivery';
+
+  return breakdown
+    .map(({ label, amount }) => `${label} Rs. ${amount}`)
+    .join(', ');
+}
+
 export function calculateCartSummary(items = [], discounts = 0) {
   const cartItems = Array.isArray(items) ? items : [];
   const uniqueProductsCount = getCartUniqueProductCount(cartItems);

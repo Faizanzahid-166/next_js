@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { calculateDeliveryCharge, calculateCartSummary } from './deliveryCharge.mjs';
+import { calculateDeliveryCharge, calculateCartSummary, getDeliveryChargeBreakdown, formatDeliveryChargeBreakdown } from './deliveryCharge.mjs';
 
 test('single unique product costs Rs. 250 regardless of quantity', () => {
   assert.equal(calculateDeliveryCharge([{ productId: 'p1', quantity: 1 }]), 250);
@@ -39,4 +39,15 @@ test('removing products and empty cart recalc to zero', () => {
   assert.equal(calculateDeliveryCharge([]), 0);
   assert.equal(calculateDeliveryCharge([{ productId: 'p1' }, { productId: 'p2' }]), 360);
   assert.equal(calculateDeliveryCharge([{ productId: 'p1' }]), 250);
+});
+
+test('delivery breakdown lists each unique product charge in text form', () => {
+  assert.deepEqual(getDeliveryChargeBreakdown([{ productId: 'p1' }, { productId: 'p2' }, { productId: 'p3' }]), [
+    { label: 'First product delivery is', amount: 250 },
+    { label: 'Second product delivery is', amount: 110 },
+    { label: '3th product delivery is', amount: 60 },
+  ]);
+
+  assert.equal(formatDeliveryChargeBreakdown([{ productId: 'p1' }, { productId: 'p2' }]), 'First product delivery is Rs. 250, Second product delivery is Rs. 110');
+  assert.equal(formatDeliveryChargeBreakdown([]), 'Free delivery');
 });

@@ -31,7 +31,7 @@ import {
   UserPlus,
   Trash2,
 } from "lucide-react";
-import { calculateCartSummary } from "@/lib/deliveryCharge";
+import { calculateCartSummary, formatDeliveryChargeBreakdown } from "@/lib/deliveryCharge";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -323,6 +323,7 @@ export default function CheckoutPage() {
   const subTotal = order?.subTotal ?? currentSummary.subTotal;
   const deliveryFee = order?.deliveryFee ?? currentSummary.deliveryCharge;
   const totalAmount = order?.totalAmount ?? currentSummary.grandTotal;
+  const deliveryBreakdownText = formatDeliveryChargeBreakdown(displayItems || []);
 
   // ── Render ────────────────────────────────────────────────────────────────
 
@@ -774,18 +775,24 @@ export default function CheckoutPage() {
               </span>
             </div>
 
-            <div className="flex justify-between text-neutral-500">
-              <span className="flex items-center gap-1.5">
-                <span>Delivery Charge</span>
-                {uniqueProductsCount > 0 && (
-                  <span className="text-[11px] text-neutral-400 font-normal">
-                    ({uniqueProductsCount} unique products)
-                  </span>
-                )}
-              </span>
-              <span className="font-semibold text-neutral-950">
-                {deliveryFee > 0 ? `Rs. ${deliveryFee.toLocaleString()}` : "Free"}
-              </span>
+            <div className="space-y-1.5 text-neutral-500">
+              <div className="flex justify-between">
+                <span className="flex items-center gap-1.5">
+                  <span>Delivery Charge</span>
+                  {uniqueProductsCount > 0 && (
+                    <span className="text-[11px] text-neutral-400 font-normal">
+                      ({uniqueProductsCount} unique products)
+                    </span>
+                  )}
+                </span>
+                <span className="font-semibold text-neutral-950">
+                  {deliveryFee > 0 ? `Rs. ${deliveryFee.toLocaleString()}` : "Free"}
+                </span>
+              </div>
+
+              <p className="text-[11px] text-neutral-500 leading-relaxed break-words">
+                {deliveryBreakdownText}
+              </p>
             </div>
 
             <div className="border-t border-border/40 my-3" />
