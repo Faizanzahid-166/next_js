@@ -37,7 +37,18 @@ export default function ProductDetailClient({ product }) {
 
     if (user?._id) {
       try {
-        await dispatch(addCartItem({ productId: product.id, quantity: 1 })).unwrap();
+        await dispatch(
+          addCartItem({
+            productId: product.id,
+            quantity: 1,
+            item: {
+              name: product.name,
+              price: product.price,
+              stock: product.stock,
+              image_url: getPrimaryImageUrl(product),
+            },
+          })
+        ).unwrap();
         toast.success("Product added to cart!");
       } catch (err) {
         toast.error(err?.message || err || "Failed to add product");

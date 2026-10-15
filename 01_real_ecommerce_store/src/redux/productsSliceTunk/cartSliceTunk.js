@@ -1,50 +1,102 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 
-// Base URL for API
 const API_BASE = "/api/products/cart";
 
-// ======================
-// Async thunks
-// ======================
+const cloneItems = (items = []) =>
+  (Array.isArray(items) ? items.map((item) => ({ ...item })) : []).map((item) => ({
+    ...item,
+    productId: item.productId ?? item.product_id,
+    quantity: Number(item.quantity || 0),
+    price: Number(item.price || 0),
+    stock: Number(item.stock || 0),
+  }));
 
-// Fetch cart
+const applyOptimisticMutation = (items, { productId, quantity, item }) => {
+  const nextItems = cloneItems(items);
+  const normalizedProductId = String(productId);
+  const normalizedQuantity = Number(quantity || 0);
+
+  if (!normalizedProductId) return nextItems;
+
+  const itemIndex = nextItems.findIndex((entry) => String(entry.productId) === normalizedProductId);
+
+  if (itemIndex === -1) {
+    if (normalizedQuantity <= 0) return nextItems;
+    nextItems.push({
+      productId: normalizedProductId,
+      quantity: Math.max(1, normalizedQuantity),
+      name: item?.name || "Product",
+      price: Number(item?.price || 0),
+      stock: Number(item?.stock || 0),
+      image_url: item?.image_url || item?.image_url || "",
+    });
+    return nextItems;
+  }
+
+  const existingItem = nextItems[itemIndex];
+  const updatedQuantity = (Number(existingItem.quantity || 0) + normalizedQuantity);
+
+  if (updatedQuantity <= 0) {
+    nextItems.splice(itemIndex, 1);
+    return nextItems;
+  }
+
+  nextItems[itemIndex] = {
+    ...existingItem,
+    quantity: Math.min(updatedQuantity, Number(existingItem.stock || updatedQuantity)),
+  };
+
+  return nextItems;
+};
+
 export const fetchCart = createAsyncThunk(
   "cart/fetchCart",
   async (_, { rejectWithValue }) => {
     try {
       const res = await axios.get(`${API_BASE}/fetchcart`, {
-        withCredentials: true, // send cookies for auth
+        withCredentials: true,
       });
-      //console.log("fetchCart API response:", res.data); // ✅ log API response
-      return res.data.data; // cart data
+      return res.data.data ?? { cartId: null, items: [] };
     } catch (err) {
-      //console.log("fetchCart error:", err.response?.data || err.message); // ✅ log error
       return rejectWithValue(err.response?.data || err.message);
     }
   }
 );
 
-// Add or update cart item
 export const addCartItem = createAsyncThunk(
   "cart/addCartItem",
-  async ({ productId, quantity }, { rejectWithValue }) => {
+  async ({ productId, quantity, item }, { getState, dispatch, rejectWithValue }) => {
+    const previousItems = cloneItems(getState().cart.items || []);
+    const delta = Number(quantity || 0);
+
+    if (!productId || !Number.isFinite(delta) || delta === 0) {
+      return rejectWithValue("Quantity must be a valid non-zero number.");
+    }
+
+    dispatch(
+      optimisticCartUpdate({
+        productId,
+        quantity: delta,
+        item,
+        previousItems,
+      })
+    );
+
     try {
       const res = await axios.post(
         `${API_BASE}/addcart`,
-        { productId, quantity },
+        { productId, quantity: delta },
         { withCredentials: true }
       );
-      //console.log("addCartItem API response:", res.data); // ✅ log API response
-      return res.data.data; // updated cart
+      return res.data.data ?? { cartId: null, items: [] };
     } catch (err) {
-      //console.log("addCartItem error:", err.response?.data || err.message); // ✅ log error
+      dispatch(revertOptimisticCartUpdate(previousItems));
       return rejectWithValue(err.response?.data || err.message);
     }
   }
 );
 
-// Delete entire cart
 export const clearCart = createAsyncThunk(
   "cart/clearCart",
   async (_, { rejectWithValue }) => {
@@ -52,18 +104,13 @@ export const clearCart = createAsyncThunk(
       const res = await axios.delete(`${API_BASE}/deletecart`, {
         withCredentials: true,
       });
-      //console.log("clearCart API response:", res.data); // ✅ log API response
       return res.data;
     } catch (err) {
-      //console.log("clearCart error:", err.response?.data || err.message); // ✅ log error
       return rejectWithValue(err.response?.data || err.message);
     }
   }
 );
 
-// ======================
-// Slice
-// ======================
 const cartSlice = createSlice({
   name: "cart",
   initialState: {
@@ -71,63 +118,92 @@ const cartSlice = createSlice({
     items: [],
     loading: false,
     error: null,
+    pendingMutations: {},
   },
-  reducers: {},
+  reducers: {
+    optimisticCartUpdate(state, action) {
+      const { productId, quantity, item, previousItems } = action.payload;
+      state.pendingMutations = {
+        ...state.pendingMutations,
+        [String(productId)]: true,
+      };
+      state.items = applyOptimisticMutation(previousItems?.length ? previousItems : state.items, {
+        productId,
+        quantity,
+        item,
+      });
+      state.error = null;
+    },
+    revertOptimisticCartUpdate(state, action) {
+      const previousItems = cloneItems(action.payload || []);
+      state.items = previousItems;
+      state.error = "Your last cart change could not be saved. Please try again.";
+      if (action.payload && action.payload.length) {
+        const lastProductId = String(action.payload[0]?.productId || "");
+        if (lastProductId) {
+          state.pendingMutations = { ...state.pendingMutations, [lastProductId]: false };
+        }
+      }
+    },
+    clearCartError(state) {
+      state.error = null;
+    },
+  },
   extraReducers: (builder) => {
-    // Fetch Cart
-    builder.addCase(fetchCart.pending, (state) => {
-      //console.log("fetchCart pending"); // ✅ log
-      state.loading = true;
-      state.error = null;
-    });
-    builder.addCase(fetchCart.fulfilled, (state, action) => {
-      //console.log("fetchCart fulfilled:", action.payload); // ✅ log payload
-      state.loading = false;
-      state.cartId = action.payload.cartId || null;
-      state.items = action.payload.items || [];
-    });
-    builder.addCase(fetchCart.rejected, (state, action) => {
-      //console.log("fetchCart rejected:", action.payload); // ✅ log error
-      state.loading = false;
-      state.error = action.payload;
-    });
-
-    // Add/Update Cart Item
-    builder.addCase(addCartItem.pending, (state) => {
-      //console.log("addCartItem pending"); // ✅ log
-      state.loading = true;
-      state.error = null;
-    });
-    builder.addCase(addCartItem.fulfilled, (state, action) => {
-      //console.log("addCartItem fulfilled:", action.payload); // ✅ log payload
-      state.loading = false;
-      state.cartId = action.payload.cartId;
-      state.items = action.payload.items;
-    });
-    builder.addCase(addCartItem.rejected, (state, action) => {
-      //console.log("addCartItem rejected:", action.payload); // ✅ log error
-      state.loading = false;
-      state.error = action.payload;
-    });
-
-    // Clear Cart
-    builder.addCase(clearCart.pending, (state) => {
-      //console.log("clearCart pending"); // ✅ log
-      state.loading = true;
-      state.error = null;
-    });
-    builder.addCase(clearCart.fulfilled, (state) => {
-      //console.log("clearCart fulfilled"); // ✅ log
-      state.loading = false;
-      state.cartId = null;
-      state.items = [];
-    });
-    builder.addCase(clearCart.rejected, (state, action) => {
-      //console.log("clearCart rejected:", action.payload); // ✅ log error
-      state.loading = false;
-      state.error = action.payload;
-    });
+    builder
+      .addCase(fetchCart.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchCart.fulfilled, (state, action) => {
+        state.loading = false;
+        state.cartId = action.payload?.cartId || null;
+        state.items = cloneItems(action.payload?.items || []);
+      })
+      .addCase(fetchCart.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      .addCase(addCartItem.pending, (state, action) => {
+        state.pendingMutations = {
+          ...state.pendingMutations,
+          [String(action.meta.arg.productId)]: true,
+        };
+        state.error = null;
+      })
+      .addCase(addCartItem.fulfilled, (state, action) => {
+        state.cartId = action.payload?.cartId || state.cartId;
+        state.items = cloneItems(action.payload?.items || state.items);
+        const productId = String(action.meta.arg.productId);
+        state.pendingMutations = {
+          ...state.pendingMutations,
+          [productId]: false,
+        };
+      })
+      .addCase(addCartItem.rejected, (state, action) => {
+        const productId = String(action.meta.arg.productId);
+        state.pendingMutations = {
+          ...state.pendingMutations,
+          [productId]: false,
+        };
+        state.error = action.payload;
+      })
+      .addCase(clearCart.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(clearCart.fulfilled, (state) => {
+        state.loading = false;
+        state.cartId = null;
+        state.items = [];
+        state.pendingMutations = {};
+      })
+      .addCase(clearCart.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      });
   },
 });
 
+export const { optimisticCartUpdate, revertOptimisticCartUpdate, clearCartError } = cartSlice.actions;
 export default cartSlice.reducer;

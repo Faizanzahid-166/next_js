@@ -46,7 +46,16 @@ export default function ProductDetail({ productId }) {
       // ── Authenticated: add to DB cart ──
       try {
         await dispatch(
-          addCartItem({ productId: product.id || product._id, quantity: 1 })
+          addCartItem({
+            productId: product.id || product._id,
+            quantity: 1,
+            item: {
+              name: product.name,
+              price: product.price,
+              stock: product.stock,
+              image_url: getPrimaryImageUrl(product),
+            },
+          })
         ).unwrap();
         toast.success("Added to cart!");
       } catch (error) {

@@ -16,7 +16,7 @@ import { Trash2, ShoppingBag, Plus, Minus, ArrowRight } from "lucide-react";
 export default function CartPage() {
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.auth);
-  const { items, loading, error } = useSelector((state) => state.cart);
+  const { items, loading, error, pendingMutations = {} } = useSelector((state) => state.cart);
 
   // Fetch cart on mount if user exists
   useEffect(() => {
@@ -123,7 +123,13 @@ export default function CartPage() {
       return;
     }
     try {
-      await dispatch(addCartItem({ productId: item.productId, quantity: 1 })).unwrap();
+      await dispatch(
+        addCartItem({
+          productId: item.productId,
+          quantity: 1,
+          item,
+        })
+      ).unwrap();
     } catch (err) {
       toast.error(err?.message || err || "Could not update quantity");
     }
@@ -135,7 +141,13 @@ export default function CartPage() {
       return;
     }
     try {
-      await dispatch(addCartItem({ productId: item.productId, quantity: -1 })).unwrap();
+      await dispatch(
+        addCartItem({
+          productId: item.productId,
+          quantity: -1,
+          item,
+        })
+      ).unwrap();
     } catch (err) {
       toast.error(err?.message || err || "Could not update quantity");
     }
@@ -193,18 +205,18 @@ export default function CartPage() {
                     <button
                       onClick={() => handleDecrease(item)}
                       className="p-1.5 hover:bg-secondary text-neutral-600 disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
-                      disabled={item.quantity <= 1}
+                      disabled={item.quantity <= 1 || pendingMutations[String(item.productId)]}
                       aria-label="Decrease quantity"
                     >
                       <Minus className="w-3.5 h-3.5" />
                     </button>
                     <span className="w-8 text-center text-xs font-semibold text-neutral-800 select-none">
-                      {item.quantity}
+                      {pendingMutations[String(item.productId)] ? "..." : item.quantity}
                     </span>
                     <button
                       onClick={() => handleIncrease(item)}
                       className="p-1.5 hover:bg-secondary text-neutral-600 disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
-                      disabled={item.quantity >= item.stock}
+                      disabled={item.quantity >= item.stock || pendingMutations[String(item.productId)]}
                       aria-label="Increase quantity"
                     >
                       <Plus className="w-3.5 h-3.5" />
