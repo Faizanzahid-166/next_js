@@ -513,7 +513,7 @@ function CheckoutContent() {
                           Qty {item.quantity} × Rs. {item.price?.toLocaleString()}
                         </span>
                         <span className="inline-flex items-center text-[10px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200/70 rounded px-1.5 py-0.5">
-                          +Rs. {calculateCartSummary([item]).deliveryCharge} Delivery
+                          Delivery
                         </span>
                       </div>
                     </div>
