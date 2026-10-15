@@ -28,7 +28,7 @@ export const loginUser = createAsyncThunk(
       const res = await axios.post("/api/auth/login", payload, {
         withCredentials: true,
       });
-      return res.data;
+      return res.data.data ?? res.data;
     } catch (err) {
       return thunkAPI.rejectWithValue(err.response?.data || err.message);
     }
@@ -41,8 +41,8 @@ export const fetchUser = createAsyncThunk(
   async (_, thunkAPI) => {
     try {
       const res = await axios.get("/api/auth/me");
-      return res.data.data;
-    } catch (err) {
+      return res.data.data ?? res.data;
+    } catch {
       return thunkAPI.rejectWithValue(null);
     }
   }
@@ -65,7 +65,7 @@ export const verifyOtp = createAsyncThunk(
       const res = await axios.post("/api/auth/verify-otp", payload, {
         withCredentials: true,
       });
-      return res.data;
+      return res.data.data ?? res.data;
     } catch (err) {
       return thunkAPI.rejectWithValue(err.response?.data || err.message);
     }
@@ -121,7 +121,7 @@ const authSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(signupUser.fulfilled, (state, action) => {
+      .addCase(signupUser.fulfilled, (state) => {
         state.loading = false;
         state.otpSent = true; // assume OTP sent after signup
       })
@@ -136,8 +136,12 @@ const authSlice = createSlice({
         state.error = null;
       })
       .addCase(loginUser.fulfilled, (state, action) => {
+        const nextUser = action.payload ?? null;
+        if (nextUser && !nextUser._id && nextUser.id) {
+          nextUser._id = nextUser.id;
+        }
         state.loading = false;
-        state.user = action.payload.user; // after login
+        state.user = nextUser;
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.loading = false;
@@ -149,7 +153,11 @@ const authSlice = createSlice({
         state.loading = true;
       })
       .addCase(fetchUser.fulfilled, (state, action) => {
-        state.user = action.payload;
+        const nextUser = action.payload ?? null;
+        if (nextUser && !nextUser._id && nextUser.id) {
+          nextUser._id = nextUser.id;
+        }
+        state.user = nextUser;
         state.loading = false;
       })
       .addCase(fetchUser.rejected, (state) => {
@@ -160,6 +168,8 @@ const authSlice = createSlice({
       // LOGOUT
       .addCase(logoutUser.fulfilled, (state) => {
         state.user = null;
+        state.loading = false;
+        state.error = null;
       })
 
       // VERIFY OTP
@@ -168,9 +178,13 @@ const authSlice = createSlice({
         state.error = null;
       })
       .addCase(verifyOtp.fulfilled, (state, action) => {
+        const nextUser = action.payload ?? null;
+        if (nextUser && !nextUser._id && nextUser.id) {
+          nextUser._id = nextUser.id;
+        }
         state.loading = false;
         state.otpVerified = true;
-        state.user = action.payload.user; // user becomes fully activated
+        state.user = nextUser;
       })
       .addCase(verifyOtp.rejected, (state, action) => {
         state.loading = false;
