@@ -8,6 +8,7 @@ import { placeOrder, resetOrderState } from "@/redux/paymentSliceTunk/orderPlace
 import { confirmPayment, resetPaymentState } from "@/redux/paymentSliceTunk/orderConfirmation/orderConfirmationSliceTunk";
 import { fetchCart } from "@/redux/productsSliceTunk/cartSliceTunk";
 import { getPrimaryImageUrl } from "@/lib/productImages";
+import { calculateCartSummary } from "@/lib/deliveryCharge";
 import { Check, CreditCard, Shield, AlertCircle, UploadCloud, X, Loader2 } from "lucide-react";
 
 const emptyAddress = {
@@ -136,7 +137,7 @@ function CheckoutContent() {
       toast.success("Order placed! Please submit EasyPaisa verification below.");
     }
     if (placeError) {
-      toast.error(placeError);
+      toast.error(typeof placeError === "string" ? placeError : placeError?.message || placeError?.error || "Could not place order");
     }
   }, [placed, order, placeError]);
 
@@ -146,7 +147,7 @@ function CheckoutContent() {
       router.push("/customer/dashboard/orders");
     }
     if (confirmError) {
-      toast.error(confirmError);
+      toast.error(typeof confirmError === "string" ? confirmError : confirmError?.message || confirmError?.error || "Could not confirm payment");
     }
   }, [confirmed, confirmError, router]);
 
@@ -204,7 +205,8 @@ function CheckoutContent() {
     );
   }
 
-  const { subTotal, deliveryCharge: deliveryFee, grandTotal: totalAmount, uniqueProductsCount } = calculateCartSummary(items || []);
+  const safeItems = Array.isArray(items) ? items : [];
+  const { subTotal, deliveryCharge: deliveryFee, grandTotal: totalAmount, uniqueProductsCount } = calculateCartSummary(safeItems);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 font-sans min-h-[calc(100vh-20rem)]">
@@ -497,9 +499,9 @@ function CheckoutContent() {
           </h2>
 
           {/* Cart items list */}
-          {items && items.length > 0 ? (
+          {safeItems.length > 0 ? (
             <div className="divide-y divide-border/40 max-h-64 overflow-y-auto pr-1">
-              {items.map((item) => (
+              {safeItems.map((item) => (
                 <div key={item.productId} className="flex items-center justify-between py-3 gap-3">
                   <div className="flex items-center gap-3 min-w-0">
                     <div className="w-12 h-12 bg-white border border-border/40 rounded overflow-hidden flex items-center justify-center flex-shrink-0 relative">

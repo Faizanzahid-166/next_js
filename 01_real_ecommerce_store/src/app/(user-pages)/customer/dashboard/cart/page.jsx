@@ -73,12 +73,14 @@ export default function CartPage() {
   }
 
   // 2. ERROR STATE
+  const cartErrorMessage = typeof error === "string" ? error : error?.message || error?.error || "Something went wrong while loading your cart.";
+
   if (error) {
     return (
       <div className="max-w-md mx-auto py-24 px-4 text-center space-y-4">
         <span className="text-3xl">⚠️</span>
         <h2 className="text-2xl font-serif font-bold text-neutral-900">Error loading cart</h2>
-        <p className="text-sm text-neutral-500">{error}</p>
+        <p className="text-sm text-neutral-500">{cartErrorMessage}</p>
         <button
           onClick={() => dispatch(fetchCart())}
           className="px-5 py-2.5 bg-primary text-primary-foreground rounded-md text-sm font-semibold hover:bg-primary/95"
@@ -161,7 +163,7 @@ export default function CartPage() {
         toast.success("Cart cleared");
         dispatch(fetchCart());
       } catch (err) {
-        toast.error(err);
+        toast.error(err?.message || err || "Could not clear cart");
       }
     }
   };

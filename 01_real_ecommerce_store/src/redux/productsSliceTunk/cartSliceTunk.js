@@ -52,14 +52,26 @@ const applyOptimisticMutation = (items, { productId, quantity, item }) => {
 
 export const fetchCart = createAsyncThunk(
   "cart/fetchCart",
-  async (_, { rejectWithValue }) => {
+  async (_, { getState, rejectWithValue }) => {
     try {
+      const user = getState()?.auth?.user;
+      const userId = user?._id ?? user?.id;
+
+      if (!userId) {
+        return { cartId: null, items: [] };
+      }
+
       const res = await axios.get(`${API_BASE}/fetchcart`, {
         withCredentials: true,
       });
       return res.data.data ?? { cartId: null, items: [] };
     } catch (err) {
-      return rejectWithValue(err.response?.data || err.message);
+      if (err.response?.status === 401) {
+        return { cartId: null, items: [] };
+      }
+
+      const message = err.response?.data?.message || err.response?.data?.error || err.message || "Failed to load cart";
+      return rejectWithValue(message);
     }
   }
 );
