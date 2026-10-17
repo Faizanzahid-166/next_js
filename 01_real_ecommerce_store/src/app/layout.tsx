@@ -104,7 +104,7 @@ export default function RootLayout({
     <html lang="en" className={`${playfair.variable} ${inter.variable}`}>
       <body className="antialiased min-h-screen bg-background text-foreground font-sans">
 
-        /* Meta Pixel (Facebook Pixel) */
+        {/* Meta Pixel (Facebook Pixel) */}
          <MetaPixel />
 
         {/* redux store provider */}
