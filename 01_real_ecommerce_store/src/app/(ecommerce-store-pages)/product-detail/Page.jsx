@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import axios from "axios";
 import Link from "next/link";
@@ -18,6 +18,8 @@ export default function ProductDetail({ productId }) {
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [isCartAnimating, setIsCartAnimating] = useState(false);
+  const cartAnimationTimer = useRef(null);
 
   // Hydrate guest cart on mount (restores localStorage cart into Redux)
   useEffect(() => {
@@ -39,8 +41,20 @@ export default function ProductDetail({ productId }) {
     if (user?._id) dispatch(fetchCart());
   }, [user, dispatch]);
 
+  useEffect(() => {
+    return () => {
+      if (cartAnimationTimer.current) {
+        clearTimeout(cartAnimationTimer.current);
+      }
+    };
+  }, []);
+
   const handleAddToCart = async () => {
     if (!product) return;
+
+    setIsCartAnimating(true);
+    if (cartAnimationTimer.current) clearTimeout(cartAnimationTimer.current);
+    cartAnimationTimer.current = setTimeout(() => setIsCartAnimating(false), 600);
 
     if (user) {
       // ── Authenticated: add to DB cart ──
@@ -105,9 +119,39 @@ export default function ProductDetail({ productId }) {
           <button
             onClick={handleAddToCart}
             disabled={product.stock === 0 || (user && cartLoading)}
-            className="bg-black text-white px-6 py-3 rounded-xl hover:bg-gray-500 disabled:opacity-50"
+            className={`group relative overflow-hidden rounded-xl border px-6 py-3 text-white shadow-lg transition-all duration-500 disabled:cursor-not-allowed disabled:opacity-50 ${
+              isCartAnimating
+                ? "cart-button-pop border-emerald-300 bg-gradient-to-r from-emerald-500 via-green-500 to-lime-500 shadow-xl shadow-emerald-500/40"
+                : "border-orange-400 bg-gradient-to-r from-orange-500 via-amber-500 to-red-500 shadow-orange-500/30 hover:-translate-y-1 hover:scale-[1.02] hover:shadow-xl hover:shadow-orange-600/40"
+            }`}
+            style={
+              isCartAnimating
+                ? {
+                    transform: "scale(0.98)",
+                    background: "linear-gradient(135deg, #10b981 0%, #22c55e 50%, #a3e635 100%)",
+                    boxShadow: "0 18px 35px rgba(16, 185, 129, 0.45)",
+                  }
+                : undefined
+            }
           >
-            {user && cartLoading ? "Adding…" : "Add to Cart"}
+            <span className="absolute inset-y-0 left-0 w-16 -translate-x-full bg-white/25 blur-md transition-transform duration-700 group-hover:translate-x-[420%]" />
+            <span
+              className={`absolute right-4 top-1/2 h-2.5 w-2.5 -translate-y-1/2 rounded-full bg-white/90 shadow-[0_0_12px_rgba(255,255,255,0.9)] transition-all duration-500 ${
+                isCartAnimating ? "right-3 scale-125 opacity-100" : "opacity-0"
+              }`}
+            />
+            <span className="relative z-10 flex items-center gap-2 font-semibold tracking-wide">
+              <span className={`transition-all duration-500 ${isCartAnimating ? "translate-x-1" : "group-hover:translate-x-1"}`}>
+                {user && cartLoading ? "Adding…" : isCartAnimating ? "Added!" : "Add to Cart"}
+              </span>
+              <span
+                className={`inline-flex h-7 w-7 items-center justify-center rounded-full bg-white/15 text-base transition-transform duration-500 ${
+                  isCartAnimating ? "translate-x-3 scale-110 rotate-12" : "group-hover:translate-x-3 group-hover:scale-110"
+                }`}
+              >
+                🛒
+              </span>
+            </span>
           </button>
           <Link href="/products" className="px-6 py-3 border rounded-xl hover:bg-gray-100">
             Back
