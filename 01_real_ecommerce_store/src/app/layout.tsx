@@ -1,5 +1,7 @@
 //"use client"; // <--- Add this if this layout will host client pages like verify-otp
 import type { Metadata } from "next";
+import MetaPixel from "@/components/MetaPixel";
+
 import { Playfair_Display, Inter } from "next/font/google";
 import "./globals.css";
 
@@ -101,6 +103,9 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${playfair.variable} ${inter.variable}`}>
       <body className="antialiased min-h-screen bg-background text-foreground font-sans">
+
+        /* Meta Pixel (Facebook Pixel) */
+         <MetaPixel />
 
         {/* redux store provider */}
         <Providers>
