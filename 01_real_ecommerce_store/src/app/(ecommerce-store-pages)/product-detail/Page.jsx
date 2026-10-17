@@ -105,7 +105,7 @@ export default function ProductDetail({ productId }) {
           <button
             onClick={handleAddToCart}
             disabled={product.stock === 0 || (user && cartLoading)}
-            className="bg-black text-white px-6 py-3 rounded-xl hover:bg-gray-800 disabled:opacity-50"
+            className="bg-black text-white px-6 py-3 rounded-xl hover:bg-gray-500 disabled:opacity-50"
           >
             {user && cartLoading ? "Adding…" : "Add to Cart"}
           </button>
