@@ -38,7 +38,7 @@ export default function Navbar() {
 
   const navLinks = [
     { name: "Home", path: "/" },
-    { name: "Store", path: "/products" },
+    { name: "Products", path: "/products" },
     { name: "About", path: "/about" },
     { name: "Contact", path: "/contact" },
   ];
@@ -67,7 +67,7 @@ export default function Navbar() {
           </div>
 
           {/* CENTER: NAV LINKS */}
-          <ul className="hidden md:flex flex-1 justify-center items-center gap-6 lg:gap-8 min-w-0">
+          <ul className="hidden lg:flex flex-1 justify-center items-center gap-6 xl:gap-8 min-w-0">
             {navLinks.map((link) => (
               <li key={link.name} className="min-w-0">
                 <Link

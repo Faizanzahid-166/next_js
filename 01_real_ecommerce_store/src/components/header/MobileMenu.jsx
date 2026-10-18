@@ -11,12 +11,12 @@ export default function MobileMenu({ navLinks, user, handleLogout, cartCount = 0
   const closeMenu = () => setOpen(false);
 
   return (
-    <div className="relative md:hidden flex items-center gap-2 ml-auto">
+    <div className="relative md:hidden flex items-center gap-2 ml-auto shrink-0">
       {/* Small cart bag on the mobile bar too for easy access */}
       {user && user.role === "customer" && (
         <Link
           href="/customer/dashboard/cart"
-          className="relative p-2 text-muted-foreground hover:text-foreground transition-colors rounded-md"
+          className="relative p-2 text-muted-foreground hover:text-foreground transition-colors rounded-lg"
           onClick={closeMenu}
           aria-label="Open cart"
         >
@@ -32,7 +32,7 @@ export default function MobileMenu({ navLinks, user, handleLogout, cartCount = 0
       {/* Menu Button */}
       <button
         onClick={toggle}
-        className="p-2 text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors focus:outline-none rounded-md"
+        className="p-2.5 text-muted-foreground hover:text-foreground hover:bg-secondary/80 transition-all focus:outline-none rounded-xl border border-border/60 bg-background/80 shadow-sm"
         aria-label={open ? "Close menu" : "Open menu"}
         aria-expanded={open}
       >
@@ -41,18 +41,18 @@ export default function MobileMenu({ navLinks, user, handleLogout, cartCount = 0
 
       {/* Dropdown Menu */}
       {open && (
-        <div className="absolute top-full right-0 left-0 mt-2 bg-background/95 backdrop-blur-md border border-border/80 rounded-xl shadow-lg p-4 flex flex-col gap-4 animate-fadeIn z-50">
-          <div className="flex flex-col gap-2">
+        <div className="absolute top-full right-0 mt-2 w-[min(280px,calc(100vw-1rem))] bg-background/95 backdrop-blur-md border border-border/80 rounded-2xl shadow-xl p-3 sm:p-4 flex flex-col gap-3 animate-fadeIn z-50">
+          <div className="flex flex-col gap-1.5">
             {navLinks.map((link) => (
               <Link
                 key={link.name}
                 href={link.path}
                 onClick={closeMenu}
-                className="py-2.5 px-3 rounded-md text-sm font-medium hover:bg-secondary text-foreground transition-colors flex justify-between items-center"
+                className="flex items-center justify-between gap-2 py-2.5 px-3 rounded-xl text-sm font-medium hover:bg-secondary text-foreground transition-colors"
               >
                 <span>{link.name}</span>
                 {link.name === "Cart" && cartCount > 0 && (
-                  <span className="bg-primary text-primary-foreground px-2 py-0.5 rounded-full text-xs font-bold">
+                  <span className="bg-primary text-primary-foreground px-2 py-0.5 rounded-full text-[10px] font-bold leading-none">
                     {cartCount}
                   </span>
                 )}
@@ -60,10 +60,10 @@ export default function MobileMenu({ navLinks, user, handleLogout, cartCount = 0
             ))}
           </div>
 
-          <div className="border-t border-border/40 pt-4 flex flex-col gap-3">
+          <div className="border-t border-border/40 pt-3 flex flex-col gap-2.5">
             {user ? (
-              <div className="flex flex-col gap-2">
-                <div className="px-3 text-xs text-muted-foreground font-medium break-words">
+              <div className="flex flex-col gap-2.5">
+                <div className="px-2 text-xs text-muted-foreground font-medium break-words leading-relaxed">
                   Signed in as <span className="text-foreground">{user.name}</span> ({user.role})
                 </div>
                 <button
@@ -71,17 +71,17 @@ export default function MobileMenu({ navLinks, user, handleLogout, cartCount = 0
                     handleLogout();
                     closeMenu();
                   }}
-                  className="w-full bg-secondary hover:bg-secondary/80 text-foreground py-2 rounded-md text-sm font-medium border border-border transition-colors mt-1"
+                  className="w-full bg-secondary hover:bg-secondary/80 text-foreground py-2.5 rounded-xl text-sm font-medium border border-border transition-colors"
                 >
                   Logout
                 </button>
               </div>
             ) : (
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-2.5">
                 <Link
                   href="/login"
                   onClick={closeMenu}
-                  className="py-2 rounded-md text-sm font-medium text-center border border-border hover:bg-secondary transition-colors"
+                  className="py-2.5 rounded-xl text-sm font-medium text-center border border-border hover:bg-secondary transition-colors"
                 >
                   Login
                 </Link>
@@ -89,7 +89,7 @@ export default function MobileMenu({ navLinks, user, handleLogout, cartCount = 0
                 <Link
                   href="/signup"
                   onClick={closeMenu}
-                  className="py-2 bg-primary text-primary-foreground rounded-md text-sm font-medium text-center hover:bg-primary/90 transition-colors"
+                  className="py-2.5 bg-primary text-primary-foreground rounded-xl text-sm font-medium text-center hover:bg-primary/90 transition-colors"
                 >
                   Signup
                 </Link>
