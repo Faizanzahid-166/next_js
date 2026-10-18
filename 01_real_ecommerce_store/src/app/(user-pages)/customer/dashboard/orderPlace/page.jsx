@@ -16,8 +16,7 @@ const emptyAddress = {
   phone: "",
   address: "",
   city: "",
-  country: "",
-  postalCode: "",
+  province: "",
 };
 
 function CheckoutContent() {
@@ -152,18 +151,38 @@ function CheckoutContent() {
   }, [confirmed, confirmError, router]);
 
   const handleAddressChange = (e) => {
-    setShippingAddress({ ...shippingAddress, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setShippingAddress((prev) => ({
+      ...prev,
+      [name === "Province" ? "province" : name]: value,
+    }));
   };
 
   const handlePlaceOrder = (e) => {
     e.preventDefault();
 
-    if (Object.values(shippingAddress).some((v) => !v.trim())) {
+    const normalizedAddress = {
+      ...shippingAddress,
+      province: (shippingAddress.province ?? shippingAddress.Province ?? "").trim(),
+    };
+
+    const required = ["fullName", "phone", "address", "city", "province"];
+    const missing = required.filter((key) => !normalizedAddress[key]?.trim());
+
+    if (missing.length > 0) {
       toast.error("Please fill in all shipping address fields");
       return;
     }
 
-    dispatch(placeOrder({ shippingAddress, paymentMethod }));
+    dispatch(
+      placeOrder({
+        shippingAddress: {
+          ...normalizedAddress,
+          Province: normalizedAddress.province,
+        },
+        paymentMethod,
+      })
+    );
   };
 
   const handleConfirmPayment = (e) => {
@@ -370,7 +389,7 @@ function CheckoutContent() {
                       name="fullName"
                       value={shippingAddress.fullName}
                       onChange={handleAddressChange}
-                      placeholder="e.g. Alexander Cole"
+                      placeholder="e.g. Muhammad Affan"
                       className="w-full border border-border p-2.5 rounded focus:outline-none focus:border-neutral-500 text-sm"
                       required
                     />
@@ -388,7 +407,7 @@ function CheckoutContent() {
                     />
                   </div>
 
-                  <div className="space-y-1">
+                 {/*  <div className="space-y-1">
                     <label className="text-[10px] uppercase font-semibold tracking-wider text-neutral-400">Postal Code</label>
                     <input
                       name="postalCode"
@@ -398,7 +417,7 @@ function CheckoutContent() {
                       className="w-full border border-border p-2.5 rounded focus:outline-none focus:border-neutral-500 text-sm"
                       required
                     />
-                  </div>
+                  </div> */}
 
                   <div className="sm:col-span-2 space-y-1">
                     <label className="text-[10px] uppercase font-semibold tracking-wider text-neutral-400">Street Address</label>
@@ -425,12 +444,12 @@ function CheckoutContent() {
                   </div>
 
                   <div className="space-y-1">
-                    <label className="text-[10px] uppercase font-semibold tracking-wider text-neutral-400">Country</label>
+                    <label className="text-[10px] uppercase font-semibold tracking-wider text-neutral-400">Province</label>
                     <input
-                      name="country"
-                      value={shippingAddress.country}
+                      name="province"
+                      value={shippingAddress.province ?? shippingAddress.Province ?? ""}
                       onChange={handleAddressChange}
-                      placeholder="e.g. Pakistan"
+                      placeholder="e.g. Punjab"
                       className="w-full border border-border p-2.5 rounded focus:outline-none focus:border-neutral-500 text-sm"
                       required
                     />

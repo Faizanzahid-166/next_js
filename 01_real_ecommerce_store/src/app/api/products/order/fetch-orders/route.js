@@ -26,7 +26,6 @@ export async function GET(req) {
         shipping_address,
         shipping_city,
         shipping_country,
-        shipping_postal_code,
         created_at,
         03_order_items (
           id,
@@ -63,7 +62,6 @@ export async function GET(req) {
         address: o.shipping_address,
         city: o.shipping_city,
         country: o.shipping_country,
-        postalCode: o.shipping_postal_code,
       },
       pricing: {
         subTotal: o.sub_total,

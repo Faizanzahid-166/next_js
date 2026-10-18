@@ -42,8 +42,7 @@ const emptyAddress = {
   phone: "",
   address: "",
   city: "",
-  country: "",
-  postalCode: "",
+  province: "",
 };
 
 // ---------------------------------------------------------------------------
@@ -182,27 +181,43 @@ export default function CheckoutPage() {
   // ── Handlers ──────────────────────────────────────────────────────────────
 
   const handleAddressChange = (e) => {
-    setShippingAddress({ ...shippingAddress, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setShippingAddress((prev) => ({
+      ...prev,
+      [name === "Province" ? "province" : name]: value,
+    }));
   };
 
   const handlePlaceOrder = (e) => {
     e.preventDefault();
 
-    // Validate required fields
-    const required = ["fullName", "phone", "address", "city", "country"];
-    const missing = required.filter((k) => !shippingAddress[k]?.trim());
+    const normalizedAddress = {
+      ...shippingAddress,
+      province: (shippingAddress.province ?? shippingAddress.Province ?? "").trim(),
+      postalCode: "",
+    };
+
+    const required = ["fullName", "phone", "address", "city", "province"];
+    const missing = required.filter((k) => !normalizedAddress[k]?.trim());
     if (missing.length > 0) {
       toast.error("Please fill in all required shipping fields");
       return;
     }
 
+    const payloadAddress = {
+      ...normalizedAddress,
+      Province: normalizedAddress.province,
+    };
+
     if (cartItems && cartItems.length > 0) {
       setLastOrderedItems(cartItems);
     }
 
+    const dataForOrder = payloadAddress;
+
     if (isAuthenticated) {
       // Authenticated: cart lives in DB, only send shipping + payment
-      dispatch(placeOrder({ shippingAddress, paymentMethod }));
+      dispatch(placeOrder({ shippingAddress: dataForOrder, paymentMethod }));
     } else {
       // Guest: send cart items in the request body
       const guestCartPayload = cartItems.map((item) => ({
@@ -211,7 +226,7 @@ export default function CheckoutPage() {
       }));
       dispatch(
         placeOrder({
-          shippingAddress,
+          shippingAddress: dataForOrder,
           paymentMethod,
           guestCart: guestCartPayload,
         })
@@ -314,9 +329,11 @@ export default function CheckoutPage() {
 
   // Subtotal, delivery charge, and total amount are recalculated from unique products only.
   const displayItems =
-    cartItems && cartItems.length > 0
-      ? cartItems
-      : order?.items || lastOrderedItems;
+    !hydrated && !isAuthenticated
+      ? []
+      : cartItems && cartItems.length > 0
+        ? cartItems
+        : order?.items || lastOrderedItems;
 
   const currentSummary = calculateCartSummary(displayItems || []);
   const uniqueProductsCount = currentSummary.uniqueProductsCount;
@@ -563,7 +580,7 @@ export default function CheckoutPage() {
                       name="fullName"
                       value={shippingAddress.fullName}
                       onChange={handleAddressChange}
-                      placeholder="e.g. Alexander Cole"
+                      placeholder="e.g. Muhammad Affan"
                       className="w-full border border-border p-2.5 rounded focus:outline-none focus:border-neutral-500 text-sm"
                       required
                     />
@@ -585,13 +602,13 @@ export default function CheckoutPage() {
 
                   <div className="space-y-1">
                     <label className="text-[10px] uppercase font-semibold tracking-wider text-neutral-400">
-                      Country <span className="text-red-400">*</span>
+                      Province <span className="text-red-400">*</span>
                     </label>
                     <input
-                      name="country"
-                      value={shippingAddress.country}
+                      name="province"
+                      value={shippingAddress.province ?? shippingAddress.Province ?? ""}
                       onChange={handleAddressChange}
-                      placeholder="e.g. Pakistan"
+                      placeholder="e.g. Punjab"
                       className="w-full border border-border p-2.5 rounded focus:outline-none focus:border-neutral-500 text-sm"
                       required
                     />
@@ -611,7 +628,7 @@ export default function CheckoutPage() {
                     />
                   </div>
 
-                  <div className="space-y-1">
+                 {/*  <div className="space-y-1">
                     <label className="text-[10px] uppercase font-semibold tracking-wider text-neutral-400">
                       Postal Code
                     </label>
@@ -622,7 +639,7 @@ export default function CheckoutPage() {
                       placeholder="e.g. 54000"
                       className="w-full border border-border p-2.5 rounded focus:outline-none focus:border-neutral-500 text-sm"
                     />
-                  </div>
+                  </div> */}
 
                   <div className="sm:col-span-2 space-y-1">
                     <label className="text-[10px] uppercase font-semibold tracking-wider text-neutral-400">

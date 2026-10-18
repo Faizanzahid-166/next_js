@@ -10,6 +10,7 @@ import {
   ShoppingCart,
   CreditCard,
   Package,
+  Boxes,
   LogOut,
   Menu,
   X,
@@ -21,6 +22,7 @@ const navLinks = [
   { name: "My Cart", path: "/customer/dashboard/cart", icon: ShoppingCart },
   { name: "Checkout", path: "/customer/dashboard/orderPlace", icon: CreditCard },
   { name: "My Orders", path: "/customer/dashboard/orders", icon: Package },
+  { name: "All Products", path: "/products", icon: Boxes },
 ];
 
 export default function DashboardLayout({ children }) {

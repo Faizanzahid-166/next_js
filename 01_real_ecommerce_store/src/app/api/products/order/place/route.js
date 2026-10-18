@@ -3,6 +3,7 @@ import { getUserFromCookies } from "@/lib/getUserFromRequest";
 import { successResponse, errorResponse } from "@/lib/response";
 import { handleCODPayment } from "@/lib/payments/cod";
 import { calculateCartSummary } from "@/lib/deliveryCharge";
+import { normalizeShippingAddress } from "@/lib/orderAddress";
 import { z } from "zod";
 
 // ---------------------------------------------------------------------------
@@ -14,9 +15,8 @@ const shippingAddressSchema = z.object({
   phone: z.string().min(7, "Valid phone number is required"),
   address: z.string().min(5, "Address must be at least 5 characters"),
   city: z.string().min(2, "City is required"),
-  country: z.string().min(2, "Country is required"),
-  // postalCode is optional for guest orders
-  postalCode: z.string().optional().default(""),
+  province: z.string().min(2, "Province is required"),
+  country: z.string().optional().default(""),
 });
 
 /** Schema for authenticated orders (cart lives in DB) */
@@ -47,12 +47,16 @@ export async function POST(req) {
   try {
     const user = await getUserFromCookies(req);
     const body = await req.json();
+    const normalizedBody = {
+      ...body,
+      shippingAddress: normalizeShippingAddress(body?.shippingAddress),
+    };
 
     // ------------------------------------------------------------------
     // Branch A: Authenticated order
     // ------------------------------------------------------------------
     if (user) {
-      const parsed = authOrderSchema.safeParse(body);
+      const parsed = authOrderSchema.safeParse(normalizedBody);
       if (!parsed.success) {
         return errorResponse(parsed.error.errors[0].message, 400);
       }
@@ -68,10 +72,14 @@ export async function POST(req) {
         .from("03_carts")
         .select("id")
         .eq("user_id", user._id.toString())
-        .single();
+        .maybeSingle();
 
-      if (cartError) return errorResponse(cartError.message, 500);
-      if (!cart) return errorResponse("Cart not found", 404);
+      if (cartError) {
+        return errorResponse(cartError.message, 500);
+      }
+      if (!cart) {
+        return errorResponse("Cart not found. Please add products before placing an order.", 404);
+      }
 
       // 2. Fetch cart items with server-side product details (price / stock)
       const { data: cartItems, error: cartItemsError } = await supabaseServer
@@ -128,7 +136,7 @@ export async function POST(req) {
     // ------------------------------------------------------------------
     // Branch B: Guest order
     // ------------------------------------------------------------------
-    const parsed = guestOrderSchema.safeParse(body);
+    const parsed = guestOrderSchema.safeParse(normalizedBody);
     if (!parsed.success) {
       return errorResponse(parsed.error.errors[0].message, 400);
     }
@@ -181,7 +189,7 @@ export async function POST(req) {
         phone: shippingAddress.phone,
         address: shippingAddress.address,
         city: shippingAddress.city,
-        country: shippingAddress.country,
+        country: shippingAddress.province || shippingAddress.country || "",
       },
       items: resolvedItems,
       shippingAddress,
@@ -236,8 +244,7 @@ async function createOrderAndRespond({
       shipping_phone: shippingAddress.phone,
       shipping_address: shippingAddress.address,
       shipping_city: shippingAddress.city,
-      shipping_country: shippingAddress.country,
-      shipping_postal_code: shippingAddress.postalCode || "",
+      shipping_country: shippingAddress.province || shippingAddress.country || "",
     })
     .select()
     .single();

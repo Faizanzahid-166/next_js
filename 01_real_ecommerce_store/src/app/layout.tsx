@@ -125,7 +125,14 @@ export default function RootLayout({
         {/* Footer (global) */}
         <Footer />
 
-        <Toaster position="top-right" richColors />
+        <Toaster
+          position="top-right"
+          richColors
+          offset={150}
+          toastOptions={{
+            duration: 1000,
+          }}
+        />
 
         </Providers>
       </body>
