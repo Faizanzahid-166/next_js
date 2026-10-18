@@ -16,7 +16,7 @@ import { Trash2, ShoppingBag, Plus, Minus, ArrowRight } from "lucide-react";
 export default function CartPage() {
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.auth);
-  const { items, loading, error, pendingMutations = {} } = useSelector((state) => state.cart);
+  const { items, loading, error } = useSelector((state) => state.cart);
 
   // Fetch cart on mount if user exists
   useEffect(() => {
@@ -206,19 +206,19 @@ export default function CartPage() {
                   <div className="flex items-center border border-border rounded-md bg-white shadow-sm overflow-hidden">
                     <button
                       onClick={() => handleDecrease(item)}
-                      className="p-1.5 hover:bg-secondary text-neutral-600 disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
-                      disabled={item.quantity <= 1 || pendingMutations[String(item.productId)]}
+                      className="p-1.5 hover:bg-secondary text-neutral-600 transition-colors"
+                      disabled={item.quantity <= 1}
                       aria-label="Decrease quantity"
                     >
                       <Minus className="w-3.5 h-3.5" />
                     </button>
                     <span className="w-8 text-center text-xs font-semibold text-neutral-800 select-none">
-                      {pendingMutations[String(item.productId)] ? "..." : item.quantity}
+                      {item.quantity}
                     </span>
                     <button
                       onClick={() => handleIncrease(item)}
-                      className="p-1.5 hover:bg-secondary text-neutral-600 disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
-                      disabled={item.quantity >= item.stock || pendingMutations[String(item.productId)]}
+                      className="p-1.5 hover:bg-secondary text-neutral-600 transition-colors"
+                      disabled={item.quantity >= item.stock}
                       aria-label="Increase quantity"
                     >
                       <Plus className="w-3.5 h-3.5" />
