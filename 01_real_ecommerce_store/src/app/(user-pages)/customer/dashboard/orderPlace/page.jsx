@@ -263,7 +263,7 @@ function CheckoutContent() {
                 <div className="bg-amber-50 border border-amber-200 text-amber-800 rounded-lg p-5 text-xs flex gap-3 items-start leading-relaxed">
                   <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5 text-amber-700" />
                   <div>
-                    Please send the delivery fee deposit via EasyPaisa to <span className="font-bold text-neutral-900">0335-5838659</span> (Muhammad Faizan Zahid), then submit the transaction ID below.
+                    Please send the delivery fee deposit via EasyPaisa to <span className="font-bold text-neutral-900">0331-9887683</span> (Muhammad Faizan Zahid), then submit the transaction ID below.
                   </div>
                 </div>
               )}

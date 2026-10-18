@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -8,7 +9,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { signupUser } from "@/redux/authSliceTunk/authSlice";
 import { toast } from "sonner";
 import Link from "next/link";
-import { Mail, Lock, User, Zap, ArrowRight, CheckCircle2 } from "lucide-react";
+import { Mail, Lock, User, Zap, ArrowRight, CheckCircle2, Eye, EyeOff } from "lucide-react";
 
 const SignupSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -20,6 +21,7 @@ export default function SignupPage() {
   const router = useRouter();
   const dispatch = useDispatch();
   const { loading, error } = useSelector((state) => state.auth);
+  const [showPassword, setShowPassword] = useState(false);
 
   const {
     register,
@@ -103,7 +105,7 @@ export default function SignupPage() {
         {/* Bottom */}
         <div className="relative z-10 border-t border-neutral-800 pt-6">
           <p className="text-neutral-500 text-xs italic">
-            "Your premium shopping experience starts here."
+            Your premium shopping experience starts here.
           </p>
           <p className="text-neutral-600 text-xs mt-1">— Blitz Store</p>
         </div>
@@ -193,15 +195,23 @@ export default function SignupPage() {
               <div className="relative">
                 <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
                 <input
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   placeholder="Min. 6 characters"
                   {...register("password")}
-                  className={`w-full pl-10 pr-4 py-3 bg-white border rounded-xl text-sm text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:ring-2 transition-all ${
+                  className={`w-full pl-10 pr-10 py-3 bg-white border rounded-xl text-sm text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:ring-2 transition-all ${
                     errors.password
                       ? "border-red-300 focus:ring-red-200"
                       : "border-neutral-200 focus:ring-amber-200 focus:border-amber-400"
                   }`}
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((prev) => !prev)}
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600 transition-colors"
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
               </div>
               {errors.password && (
                 <p className="text-xs text-red-500 flex items-center gap-1">
@@ -243,7 +253,7 @@ export default function SignupPage() {
             <div>
               <p className="text-xs font-semibold text-amber-800">Email verification required</p>
               <p className="text-xs text-amber-700 mt-0.5 leading-relaxed">
-                We'll send a 6-digit OTP to your email after registration. Please check your inbox.
+                We will send a 6-digit OTP to your email after registration. Please check your inbox.
               </p>
             </div>
           </div>

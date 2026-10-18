@@ -1,6 +1,7 @@
 "use client";
 
 import * as z from "zod";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
@@ -8,7 +9,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { loginUser } from "@/redux/authSliceTunk/authSlice";
 import { toast } from "sonner";
 import Link from "next/link";
-import { Mail, Lock, Zap, ArrowRight, ShoppingBag } from "lucide-react";
+import { Mail, Lock, Zap, ArrowRight, ShoppingBag, Eye, EyeOff } from "lucide-react";
 
 const LoginSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
@@ -19,6 +20,7 @@ export default function LoginPage() {
   const router = useRouter();
   const dispatch = useDispatch();
   const { loading, error } = useSelector((state) => state.auth);
+  const [showPassword, setShowPassword] = useState(false);
 
   const {
     register,
@@ -101,7 +103,7 @@ export default function LoginPage() {
         {/* Bottom quote */}
         <div className="relative z-10 border-t border-neutral-800 pt-6">
           <p className="text-neutral-500 text-xs italic">
-            "Shop fast, pay easy, delivered to your door."
+            Shop fast, pay easy, delivered to your door.
           </p>
           <p className="text-neutral-600 text-xs mt-1">— Blitz Store Promise</p>
         </div>
@@ -166,15 +168,23 @@ export default function LoginPage() {
               <div className="relative">
                 <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
                 <input
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   placeholder="••••••••"
                   {...register("password")}
-                  className={`w-full pl-10 pr-4 py-3 bg-white border rounded-xl text-sm text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:ring-2 transition-all ${
+                  className={`w-full pl-10 pr-10 py-3 bg-white border rounded-xl text-sm text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:ring-2 transition-all ${
                     errors.password
                       ? "border-red-300 focus:ring-red-200"
                       : "border-neutral-200 focus:ring-amber-200 focus:border-amber-400"
                   }`}
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((prev) => !prev)}
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600 transition-colors"
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
               </div>
               {errors.password && (
                 <p className="text-xs text-red-500 flex items-center gap-1">
